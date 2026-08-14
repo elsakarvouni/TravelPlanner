@@ -4,7 +4,10 @@ import { Calendar, type DateData } from 'react-native-calendars';
 import { eachDayOfInterval, format, parseISO } from 'date-fns';
 
 import { ThemedText } from '@/components/themed-text';
+import { STATUS_COLORS } from '@/constants/travel-status';
 import { useThemeColor } from '@/hooks/use-theme-color';
+
+const RANGE_COLOR = STATUS_COLORS.wish;
 
 type Props = {
   startDate: string;
@@ -50,7 +53,7 @@ export function DateRangeField({ startDate, endDate, onChange }: Props) {
 
     if (!draftEnd) {
       return {
-        [draftStart]: { startingDay: true, endingDay: true, color: tintColor, textColor: '#fff' },
+        [draftStart]: { startingDay: true, endingDay: true, color: RANGE_COLOR, textColor: '#fff' },
       };
     }
 
@@ -59,14 +62,14 @@ export function DateRangeField({ startDate, endDate, onChange }: Props) {
     days.forEach((day, index) => {
       const dateString = format(day, 'yyyy-MM-dd');
       marks[dateString] = {
-        color: tintColor,
+        color: RANGE_COLOR,
         textColor: '#fff',
         startingDay: index === 0,
         endingDay: index === days.length - 1,
       };
     });
     return marks;
-  }, [draftStart, draftEnd, tintColor]);
+  }, [draftStart, draftEnd]);
 
   const handleConfirm = () => {
     if (draftStart && draftEnd) {

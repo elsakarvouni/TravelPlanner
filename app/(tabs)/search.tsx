@@ -1,76 +1,54 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Alert, FlatList, Pressable, StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import * as WebBrowser from 'expo-web-browser';
 
-import { UN_COUNTRIES } from '@/assets/data/countries';
+import { DestinationFilterButton } from '@/components/destination-filter-button';
 import { DestinationFiltersSheet } from '@/components/destination-filters-sheet';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import {
-  DESTINATIONS,
-  DURATION_OPTIONS,
-  type Destination,
-  type DestinationTag,
-  type DurationBucket,
-  type Season,
-} from '@/constants/destinations';
+import { CONTINENT_INFO, CONTINENT_ORDER, DESTINATIONS, type Continent } from '@/constants/destinations';
+import { useDestinationFilters } from '@/hooks/use-destination-filters';
+import { useFavorites } from '@/hooks/use-favorites';
 import { useThemeColor } from '@/hooks/use-theme-color';
-
-const COUNTRY_CODE_BY_NAME = new Map(UN_COUNTRIES.map((country) => [country.name.toLowerCase(), country.code]));
+import { filtersToParams, matchesFilters } from '@/utils/destination-filters';
 
 export default function SearchScreen() {
   const router = useRouter();
-  const [selectedTags, setSelectedTags] = useState<Set<DestinationTag>>(new Set());
-  const [selectedSeasons, setSelectedSeasons] = useState<Set<Season>>(new Set());
-  const [selectedDurations, setSelectedDurations] = useState<Set<DurationBucket>>(new Set());
-  const [filtersVisible, setFiltersVisible] = useState(false);
+  const { favoriteIds, refresh: refreshFavorites } = useFavorites();
+  const {
+    filters,
+    activeFilterCount,
+    selectedTags,
+    selectedSeasons,
+    selectedDurations,
+    sheetVisible,
+    openSheet,
+    closeSheet,
+    toggleTag,
+    toggleSeason,
+    toggleDuration,
+    clear,
+  } = useDestinationFilters();
 
   const borderColor = useThemeColor({}, 'icon');
   const textColor = useThemeColor({}, 'text');
   const tintColor = useThemeColor({}, 'tint');
 
-  const activeFilterCount = selectedTags.size + selectedSeasons.size + selectedDurations.size;
+  useFocusEffect(
+    useCallback(() => {
+      refreshFavorites();
+    }, [refreshFavorites])
+  );
 
-  const filteredDestinations = useMemo(() => {
-    return DESTINATIONS.filter((destination) => {
-      const matchesTags = selectedTags.size === 0 || destination.tags.some((tag) => selectedTags.has(tag));
-      const matchesSeasons =
-        selectedSeasons.size === 0 || destination.seasons.some((season) => selectedSeasons.has(season));
-      const matchesDuration =
-        selectedDurations.size === 0 ||
-        DURATION_OPTIONS.some(
-          (option) =>
-            selectedDurations.has(option.duration) &&
-            destination.suggestedDays.min <= option.range.max &&
-            destination.suggestedDays.max >= option.range.min
-        );
-      return matchesTags && matchesSeasons && matchesDuration;
-    });
-  }, [selectedTags, selectedSeasons, selectedDurations]);
-
-  const toggleInSet = <T,>(set: Set<T>, value: T, setState: (next: Set<T>) => void) => {
-    const next = new Set(set);
-    if (next.has(value)) {
-      next.delete(value);
-    } else {
-      next.add(value);
-    }
-    setState(next);
-  };
-
-  const handleSelectDestination = (destination: Destination) => {
-    const countryCode = COUNTRY_CODE_BY_NAME.get(destination.country.toLowerCase()) ?? '';
-    router.push({
-      pathname: '/add-trip',
-      params: {
-        destination: `${destination.name}, ${destination.country}`,
-        countryCode,
-      },
-    });
-  };
+  const continents = useMemo(() => {
+    return CONTINENT_ORDER.map((continent) => {
+      const count = DESTINATIONS.filter((d) => d.continent === continent && matchesFilters(d, filters)).length;
+      return { continent, count };
+    }).filter((entry) => entry.count > 0);
+  }, [filters]);
 
   const handleFlightsPress = () => {
     WebBrowser.openBrowserAsync('https://www.skyscanner.com/');
@@ -84,21 +62,28 @@ export default function SearchScreen() {
     ]);
   };
 
+  const handleSelectContinent = (continent: Continent) => {
+    router.push({
+      pathname: '/continent/[continent]',
+      params: { continent, ...filtersToParams(filters) },
+    });
+  };
+
   return (
     <ThemedView style={styles.container}>
       <View style={styles.header}>
-        <Pressable style={[styles.filterButton, { borderColor }]} onPress={() => setFiltersVisible(true)} hitSlop={8}>
-          <IconSymbol name="line.3.horizontal.decrease" size={20} color={textColor} />
-          {activeFilterCount > 0 && (
-            <View style={[styles.filterBadge, { backgroundColor: tintColor }]}>
-              <ThemedText style={styles.filterBadgeText}>{activeFilterCount}</ThemedText>
-            </View>
-          )}
-        </Pressable>
-
+        <DestinationFilterButton activeCount={activeFilterCount} onPress={openSheet} />
         <ThemedText type="title" style={styles.title}>
           Βρες Ιδέα
         </ThemedText>
+        <Pressable style={[styles.favoritesButton, { borderColor }]} onPress={() => router.push('/favorites')} hitSlop={8}>
+          <IconSymbol name="heart" size={20} color={textColor} />
+          {favoriteIds.size > 0 && (
+            <View style={[styles.favoritesBadge, { backgroundColor: tintColor }]}>
+              <ThemedText style={styles.favoritesBadgeText}>{favoriteIds.size}</ThemedText>
+            </View>
+          )}
+        </Pressable>
       </View>
 
       <View style={styles.actionsRow}>
@@ -111,41 +96,39 @@ export default function SearchScreen() {
       </View>
 
       <FlatList
-        data={filteredDestinations}
-        keyExtractor={(item) => item.id}
+        data={continents}
+        keyExtractor={(item) => item.continent}
         numColumns={2}
         columnWrapperStyle={styles.gridRow}
         contentContainerStyle={styles.gridContent}
-        renderItem={({ item }) => (
-          <Pressable
-            style={[styles.card, { borderColor }]}
-            onPress={() => handleSelectDestination(item)}>
-            <Image source={{ uri: item.imageUrl }} style={styles.cardImage} contentFit="cover" />
-            <View style={styles.cardBody}>
-              <ThemedText style={styles.cardName}>{item.name}</ThemedText>
-              <ThemedText style={styles.cardCountry}>{item.country}</ThemedText>
-              <ThemedText style={styles.cardDescription} numberOfLines={2}>
-                {item.shortDescription}
-              </ThemedText>
-            </View>
-          </Pressable>
-        )}
+        renderItem={({ item }) => {
+          const info = CONTINENT_INFO[item.continent];
+          return (
+            <Pressable style={[styles.card, { borderColor }]} onPress={() => handleSelectContinent(item.continent)}>
+              <Image source={{ uri: info.imageUrl }} style={styles.cardImage} contentFit="cover" />
+              <View style={styles.cardBody}>
+                <ThemedText style={styles.cardName}>
+                  {info.emoji} {info.label}
+                </ThemedText>
+                <ThemedText style={styles.cardSubtitle}>
+                  {item.count} {item.count === 1 ? 'προορισμός' : 'προορισμοί'}
+                </ThemedText>
+              </View>
+            </Pressable>
+          );
+        }}
       />
 
       <DestinationFiltersSheet
-        visible={filtersVisible}
-        onClose={() => setFiltersVisible(false)}
+        visible={sheetVisible}
+        onClose={closeSheet}
         selectedTags={selectedTags}
         selectedSeasons={selectedSeasons}
         selectedDurations={selectedDurations}
-        onToggleTag={(tag) => toggleInSet(selectedTags, tag, setSelectedTags)}
-        onToggleSeason={(season) => toggleInSet(selectedSeasons, season, setSelectedSeasons)}
-        onToggleDuration={(duration) => toggleInSet(selectedDurations, duration, setSelectedDurations)}
-        onClear={() => {
-          setSelectedTags(new Set());
-          setSelectedSeasons(new Set());
-          setSelectedDurations(new Set());
-        }}
+        onToggleTag={toggleTag}
+        onToggleSeason={toggleSeason}
+        onToggleDuration={toggleDuration}
+        onClear={clear}
       />
     </ThemedView>
   );
@@ -163,7 +146,10 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 16,
   },
-  filterButton: {
+  title: {
+    flex: 1,
+  },
+  favoritesButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -171,7 +157,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  filterBadge: {
+  favoritesBadge: {
     position: 'absolute',
     top: -4,
     right: -4,
@@ -182,13 +168,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 4,
   },
-  filterBadgeText: {
+  favoritesBadgeText: {
     color: '#fff',
     fontSize: 11,
     fontWeight: '700',
-  },
-  title: {
-    flex: 1,
   },
   actionsRow: {
     flexDirection: 'row',
@@ -220,22 +203,18 @@ const styles = StyleSheet.create({
   },
   cardImage: {
     width: '100%',
-    height: 110,
+    height: 130,
   },
   cardBody: {
     padding: 10,
   },
   cardName: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '700',
   },
-  cardCountry: {
+  cardSubtitle: {
     fontSize: 12,
     opacity: 0.6,
-    marginBottom: 4,
-  },
-  cardDescription: {
-    fontSize: 12,
-    opacity: 0.8,
+    marginTop: 2,
   },
 });

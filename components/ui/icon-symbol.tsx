@@ -21,6 +21,8 @@ const MAPPING = {
   'plus': 'add',
   'xmark': 'close',
   'line.3.horizontal.decrease': 'filter-list',
+  'heart': 'favorite-border',
+  'heart.fill': 'favorite',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
 } as IconMapping;

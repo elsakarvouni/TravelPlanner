@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSQLiteContext } from 'expo-sqlite';
 
 import type { NewTrip, Trip } from '@/types/trip';
+import { cancelTripNotifications, scheduleTripNotifications } from '@/utils/trip-notifications';
 
 export function useTrips() {
   const db = useSQLiteContext();
@@ -21,7 +22,7 @@ export function useTrips() {
 
   const addTrip = useCallback(
     async (trip: NewTrip) => {
-      await db.runAsync(
+      const result = await db.runAsync(
         'INSERT INTO trips (title, destination, destination_country_code, start_date, end_date) VALUES (?, ?, ?, ?, ?)',
         trip.title,
         trip.destination,
@@ -29,6 +30,12 @@ export function useTrips() {
         trip.start_date,
         trip.end_date
       );
+      await scheduleTripNotifications({
+        id: result.lastInsertRowId,
+        title: trip.title,
+        destination: trip.destination,
+        start_date: trip.start_date,
+      });
       await refresh();
     },
     [db, refresh]
@@ -54,6 +61,12 @@ export function useTrips() {
         trip.end_date,
         id
       );
+      await scheduleTripNotifications({
+        id,
+        title: trip.title,
+        destination: trip.destination,
+        start_date: trip.start_date,
+      });
       await refresh();
     },
     [db, refresh]
@@ -62,6 +75,7 @@ export function useTrips() {
   const deleteTrip = useCallback(
     async (id: number) => {
       await db.runAsync('DELETE FROM trips WHERE id = ?', id);
+      await cancelTripNotifications(id);
       await refresh();
     },
     [db, refresh]

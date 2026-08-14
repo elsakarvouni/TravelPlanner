@@ -42,4 +42,14 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
     await db.execAsync('PRAGMA user_version = 3');
     currentVersion = 3;
   }
+
+  if (currentVersion < 4) {
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS destination_favorites (
+        destination_id TEXT PRIMARY KEY NOT NULL
+      );
+    `);
+    await db.execAsync('PRAGMA user_version = 4');
+    currentVersion = 4;
+  }
 }

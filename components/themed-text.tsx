@@ -8,6 +8,7 @@ export type ThemedTextProps = TextProps & {
   type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link';
 };
 
+// text component που αλλάζει χρώμα ανάλογα με light/dark mode, με μερικά προκαθορισμένα στυλ (title, subtitle κλπ)
 export function ThemedText({
   style,
   lightColor,

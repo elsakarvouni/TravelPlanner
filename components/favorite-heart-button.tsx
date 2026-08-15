@@ -9,6 +9,7 @@ type Props = {
   onToggle: () => void;
 };
 
+// η καρδούλα πάνω δεξιά στις κάρτες - γεμάτη κόκκινη αν είναι favorite, άδεια λευκή αν όχι
 export function FavoriteHeartButton({ isFavorite, onToggle }: Props) {
   return (
     <Pressable style={styles.button} onPress={onToggle} hitSlop={10}>

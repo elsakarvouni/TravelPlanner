@@ -26,6 +26,7 @@ type Props = {
   onClear: () => void;
 };
 
+// bottom sheet με τα φίλτρα προορισμών (τύπος/εποχή/διάρκεια) - όλα multi-select chips, το state το κρατάει ο parent
 export function DestinationFiltersSheet({
   visible,
   onClose,

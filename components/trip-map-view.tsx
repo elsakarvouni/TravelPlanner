@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Linking, Pressable, StyleSheet, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 
 import { ThemedText } from '@/components/themed-text';
@@ -14,12 +14,16 @@ const ENTRY_ICON: Record<ItineraryEntry['type'], string> = {
 
 type Props = {
   entries: ItineraryEntry[];
+  destination: string;
+  destinationLatitude: number | null;
+  destinationLongitude: number | null;
 };
 
+// φτιάχνει ολόκληρο HTML string με Leaflet map μέσα, για να το φορτώσουμε σε WebView (δεν υπάρχει native map component εδώ)
 function buildMapHtml(
   pins: { lat: number; lon: number; title: string; time: string; emoji: string }[]
 ) {
-  const data = JSON.stringify(pins);
+  const data = JSON.stringify(pins); // περνάμε τα pins μέσα στο html σαν JSON για να τα διαβάσει το js του leaflet
 
   return `<!DOCTYPE html>
 <html>
@@ -83,6 +87,7 @@ function buildMapHtml(
           return marker;
         });
 
+        // αν έχουμε πολλά pins κάνουμε zoom να χωράνε όλα, αν έχουμε ένα μόνο κάνουμε απλά zoom πάνω του
         if (markers.length > 1) {
           var group = L.featureGroup(markers);
           map.fitBounds(group.getBounds().pad(0.25));
@@ -90,6 +95,7 @@ function buildMapHtml(
           map.setView(markers[0].getLatLng(), 14);
         }
 
+        // το leaflet μερικές φορές μπερδεύεται με το μέγεθος μέσα σε webview, οπότε το ξαναφωνάζουμε μετά από λίγο - λύση/workaround
         function fixSize() {
           map.invalidateSize(true);
         }
@@ -105,12 +111,14 @@ function buildMapHtml(
 </html>`;
 }
 
-export function TripMapView({ entries }: Props) {
+// δείχνει χάρτη με όλες τις καταχωρήσεις του itinerary που έχουν συντεταγμένες
+export function TripMapView({ entries, destination, destinationLatitude, destinationLongitude }: Props) {
   const [loadFailed, setLoadFailed] = useState(false);
   const backgroundColor = useThemeColor({}, 'background');
   const borderColor = useThemeColor({}, 'icon');
   const tintColor = useThemeColor({}, 'tint');
 
+  // κρατάμε μόνο τις καταχωρήσεις που έχουν πραγματικά lat/lon, τις άλλες δεν μπορούμε να τις βάλουμε στο χάρτη
   const pinnedEntries = useMemo(
     () => entries.filter((entry) => entry.latitude != null && entry.longitude != null),
     [entries]
@@ -130,43 +138,50 @@ export function TripMapView({ entries }: Props) {
     [pinnedEntries]
   );
 
-  if (pinnedEntries.length === 0) {
-    return (
-      <View style={[styles.empty, { backgroundColor }]}>
-        <ThemedText style={{ color: borderColor }}>
-          Πρόσθεσε μια διεύθυνση σε μια καταχώρηση για να εμφανιστεί εδώ.
-        </ThemedText>
-      </View>
-    );
-  }
-
-  if (loadFailed) {
-    return (
-      <View style={[styles.empty, { backgroundColor }]}>
-        <ThemedText style={{ color: borderColor, textAlign: 'center' }}>
-          Ο χάρτης δεν φόρτωσε. Έλεγξε τη σύνδεση στο internet και δοκίμασε ξανά.
-        </ThemedText>
-      </View>
-    );
-  }
+  // ανοίγει το native app του Google Maps - προτιμάμε coords αν τα έχουμε, αλλιώς ψάχνουμε απλά με το όνομα προορισμού
+  const openInGoogleMaps = () => {
+    const query =
+      destinationLatitude != null && destinationLongitude != null
+        ? `${destinationLatitude},${destinationLongitude}`
+        : encodeURIComponent(destination);
+    Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${query}`);
+  };
 
   return (
     <View style={styles.container}>
-      <WebView
-        key={pinnedEntries.length}
-        style={styles.map}
-        originWhitelist={['*']}
-        source={{ html }}
-        javaScriptEnabled
-        startInLoadingState
-        renderLoading={() => (
-          <View style={[styles.loading, { backgroundColor }]}>
-            <ActivityIndicator color={tintColor} />
-          </View>
-        )}
-        onError={() => setLoadFailed(true)}
-        onHttpError={() => setLoadFailed(true)}
-      />
+      {pinnedEntries.length === 0 ? (
+        <View style={[styles.empty, { backgroundColor }]}>
+          <ThemedText style={{ color: borderColor }}>
+            Πρόσθεσε μια διεύθυνση σε μια καταχώρηση για να εμφανιστεί εδώ.
+          </ThemedText>
+        </View>
+      ) : loadFailed ? (
+        <View style={[styles.empty, { backgroundColor }]}>
+          <ThemedText style={{ color: borderColor, textAlign: 'center' }}>
+            Ο χάρτης δεν φόρτωσε. Έλεγξε τη σύνδεση στο internet και δοκίμασε ξανά.
+          </ThemedText>
+        </View>
+      ) : (
+        <WebView
+          key={pinnedEntries.length}
+          style={styles.map}
+          originWhitelist={['*']}
+          source={{ html }}
+          javaScriptEnabled
+          startInLoadingState
+          renderLoading={() => (
+            <View style={[styles.loading, { backgroundColor }]}>
+              <ActivityIndicator color={tintColor} />
+            </View>
+          )}
+          onError={() => setLoadFailed(true)}
+          onHttpError={() => setLoadFailed(true)}
+        />
+      )}
+
+      <Pressable style={styles.openMapsButton} onPress={openInGoogleMaps} hitSlop={8}>
+        <ThemedText style={styles.openMapsIcon}>🗺️</ThemedText>
+      </Pressable>
     </View>
   );
 }
@@ -188,5 +203,19 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  openMapsButton: {
+    position: 'absolute',
+    right: 16,
+    bottom: 16,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  openMapsIcon: {
+    fontSize: 24,
   },
 });

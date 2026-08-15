@@ -11,20 +11,25 @@ import { DESTINATIONS, type Destination } from '@/constants/destinations';
 import { useFavorites } from '@/hooks/use-favorites';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
+// δύο maps για γρήγορο lookup - όνομα χώρας -> κωδικός, και id προορισμού -> ολόκληρο το αντικείμενο
 const COUNTRY_CODE_BY_NAME = new Map(UN_COUNTRIES.map((country) => [country.name.toLowerCase(), country.code]));
 const DESTINATION_BY_ID = new Map(DESTINATIONS.map((destination) => [destination.id, destination]));
 
+// η οθόνη αγαπημένων - grid με ό,τι έχω κάνει heart, αλφαβητικά
+// αν διαλέξω κάτι πάω κατευθείαν στη φόρμα νέου ταξιδιού
 export default function FavoritesScreen() {
   const router = useRouter();
   const borderColor = useThemeColor({}, 'icon');
   const { favoriteIds, refresh, toggleFavorite } = useFavorites();
 
+  // ξαναφέρνει τα αγαπημένα κάθε φορά που ανοίγει η οθόνη
   useFocusEffect(
     useCallback(() => {
       refresh();
     }, [refresh])
   );
 
+  // παίρνει τα ids των αγαπημένων και τα κάνει πλήρη αντικείμενα προορισμού, ταξινομημένα αλφαβητικά
   const favorites = useMemo(
     () =>
       Array.from(favoriteIds)
@@ -34,6 +39,7 @@ export default function FavoritesScreen() {
     [favoriteIds]
   );
 
+  // πάει στη φόρμα νέου ταξιδιού με τον προορισμό ήδη συμπληρωμένο
   const handleSelectDestination = (destination: Destination) => {
     const countryCode = COUNTRY_CODE_BY_NAME.get(destination.country.toLowerCase()) ?? '';
     router.push({

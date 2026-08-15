@@ -8,12 +8,13 @@ type Props = {
   size?: number;
 };
 
+// μικρό donut chart φτιαγμένο με δύο κύκλους SVG - ο ένας είναι το "φόντο" και ο άλλος δείχνει το progress
 export function StatDonut({ percent, color, size = 64 }: Props) {
   const trackColor = useThemeColor({}, 'icon');
   const strokeWidth = size * 0.14;
   const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const progress = Math.max(0, Math.min(1, percent / 100));
+  const circumference = 2 * Math.PI * radius; // μήκος περιφέρειας, το χρειαζόμαστε για το dasharray trick
+  const progress = Math.max(0, Math.min(1, percent / 100)); // κλείδωμα στο 0-1 ό,τι κι αν έρθει σαν percent
   const center = size / 2;
 
   return (
@@ -34,7 +35,7 @@ export function StatDonut({ percent, color, size = 64 }: Props) {
         stroke={color}
         strokeWidth={strokeWidth}
         strokeDasharray={`${circumference} ${circumference}`}
-        strokeDashoffset={circumference * (1 - progress)}
+        strokeDashoffset={circumference * (1 - progress)} // εδώ γίνεται η μαγική δουλειά - "κρύβουμε" το κομμάτι που δεν έχει γεμίσει ακόμα
         strokeLinecap="round"
         fill="none"
         rotation={-90}

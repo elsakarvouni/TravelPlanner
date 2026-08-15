@@ -9,6 +9,8 @@ import { useCountryStatus } from '@/hooks/use-country-status';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { groupCountriesByRegion } from '@/utils/group-countries-by-region';
 
+// modal για να προσθέσω χώρα στο been ή στο wish - λίστα με όλες τις χώρες του ΟΗΕ
+// που μπορείς να ψάξεις, ομαδοποιημένες ανά περιοχή, με badge αν είναι ήδη σε κάποια λίστα
 export default function AddCountryScreen() {
   const { been, wish, addStatus } = useCountryStatus();
   const [query, setQuery] = useState('');
@@ -17,6 +19,7 @@ export default function AddCountryScreen() {
   const placeholderColor = useThemeColor({}, 'icon');
   const borderColor = useThemeColor({}, 'icon');
 
+  // φιλτράρει τις χώρες με βάση αυτό που γράφεις στην αναζήτηση, και τις ομαδοποιεί ανά περιοχή
   const sections = useMemo(() => {
     const trimmed = query.trim().toLowerCase();
     const filtered = trimmed
@@ -26,6 +29,7 @@ export default function AddCountryScreen() {
     return groupCountriesByRegion(filtered);
   }, [query]);
 
+  // ρωτάει αν θες τη χώρα στο been ή στο wish
   const handleSelect = (country: CountryInfo) => {
     Alert.alert(`${country.flag} ${country.name}`, 'Πρόσθεσέ το στη λίστα', [
       { text: 'Been', onPress: () => addStatus(country.code, 'been') },

@@ -13,6 +13,8 @@ import type { ChecklistItem } from '@/types/checklist';
 
 const ACCENT = STATUS_COLORS.wish;
 
+// hook που κρατάει το ύψος του πληκτρολογίου, για να σηκώνεται το input πάνω από αυτό
+// στο iOS χρησιμοποιεί τα "will" events, στο Android τα "did" γιατί δεν έχει pre-animation events
 function useKeyboardHeight() {
   const [height, setHeight] = useState(0);
 
@@ -32,6 +34,8 @@ function useKeyboardHeight() {
   return height;
 }
 
+// modal με τη λίστα αποσκευών για ένα ταξίδι - προσθέτεις πράγματα, τα τσεκάρεις,
+// τα μετονομάζεις (μόνο σε iOS, με Alert.prompt) ή τα σβήνεις με long-press
 export default function TripChecklistScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const tripId = Number(id);
@@ -46,6 +50,7 @@ export default function TripChecklistScreen() {
   const borderColor = useThemeColor({}, 'icon');
   const backgroundColor = useThemeColor({}, 'background');
 
+  // προσθέτει νέο αντικείμενο στη λίστα, αν είναι κενό δεν κάνει τίποτα, και καθαρίζει το input
   const handleAdd = () => {
     const label = newLabel.trim();
     if (!label) return;
@@ -53,6 +58,8 @@ export default function TripChecklistScreen() {
     setNewLabel('');
   };
 
+  // menu όταν κάνεις long press σε ένα αντικείμενο. η μετονομασία δείχνεται μόνο σε iOS
+  // γιατί το Alert.prompt δεν δουλεύει στο Android
   const handleLongPress = (item: ChecklistItem) => {
     const options: Parameters<typeof Alert.alert>[2] = [];
 
@@ -106,6 +113,8 @@ export default function TripChecklistScreen() {
         )}
       </ScrollView>
 
+      {/* όταν είναι ανοιχτό το πληκτρολόγιο δεν χρειάζεται το extra padding κάτω,
+          αφού το πληκτρολόγιο καλύπτει ήδη εκείνο το κομμάτι */}
       <View
         style={[
           styles.inputRow,
@@ -125,6 +134,7 @@ export default function TripChecklistScreen() {
         </Pressable>
       </View>
 
+      {/* αυτό είναι απλά ένα spacer για να μη κρύβεται το περιεχόμενο πίσω από το πληκτρολόγιο */}
       {keyboardHeight > 0 && <View style={{ height: keyboardHeight }} />}
     </ThemedView>
   );

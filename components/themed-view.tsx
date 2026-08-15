@@ -7,6 +7,7 @@ export type ThemedViewProps = ViewProps & {
   darkColor?: string;
 };
 
+// ίδια λογική με το ThemedText αλλά για View - παίρνει background color ανάλογα με το θέμα
 export function ThemedView({ style, lightColor, darkColor, ...otherProps }: ThemedViewProps) {
   const backgroundColor = useThemeColor({ light: lightColor, dark: darkColor }, 'background');
 

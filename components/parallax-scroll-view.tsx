@@ -18,6 +18,7 @@ type Props = PropsWithChildren<{
   headerBackgroundColor: { dark: string; light: string };
 }>;
 
+// scroll view με parallax effect στην εικόνα header - όταν κάνεις scroll πάνω-κάτω, το header κινείται/ζουμάρει διαφορετικά
 export default function ParallaxScrollView({
   children,
   headerImage,
@@ -27,6 +28,8 @@ export default function ParallaxScrollView({
   const colorScheme = useColorScheme() ?? 'light';
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollOffset(scrollRef);
+  // το κλασικό parallax: όταν κάνεις pull-down (negative offset) το header μεγαλώνει (zoom), όταν κάνεις scroll κάτω
+  // μετακινείται πιο αργά από το περιεχόμενο - τα νούμερα [-HEADER_HEIGHT, 0, HEADER_HEIGHT] είναι τα breakpoints του interpolate
   const headerAnimatedStyle = useAnimatedStyle(() => {
     return {
       transform: [

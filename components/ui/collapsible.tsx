@@ -7,6 +7,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
+// απλό accordion - πατάς τον τίτλο και ανοιγοκλείνει το περιεχόμενο, το βελάκι γυρίζει 90 μοίρες όταν είναι ανοιχτό
 export function Collapsible({ children, title }: PropsWithChildren & { title: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const theme = useColorScheme() ?? 'light';
@@ -15,7 +16,7 @@ export function Collapsible({ children, title }: PropsWithChildren & { title: st
     <ThemedView>
       <TouchableOpacity
         style={styles.heading}
-        onPress={() => setIsOpen((value) => !value)}
+        onPress={() => setIsOpen((value) => !value)} // toggle ανοιχτό/κλειστό
         activeOpacity={0.8}>
         <IconSymbol
           name="chevron.right"

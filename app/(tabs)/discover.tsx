@@ -29,12 +29,16 @@ import { groupCountriesByRegion } from '@/utils/group-countries-by-region';
 const TOTAL_COUNTRIES = UN_COUNTRIES.length;
 const COUNTRY_BY_CODE = new Map(UN_COUNTRIES.map((country) => [country.code, country]));
 
+// παίρνει τους κωδικούς χωρών (been/wish) και τους γυρνάει σε πλήρη αντικείμενα χώρας
 function toCountryList(codes: Set<string>): CountryInfo[] {
   return Array.from(codes)
     .map((code) => COUNTRY_BY_CODE.get(code))
     .filter((country): country is CountryInfo => Boolean(country));
 }
 
+// αυτή είναι η οθόνη Discover - έχει 2 σελίδες (been/wish) με χάρτη του κόσμου,
+// στατιστικά πόσο τοις εκατό έχω καλύψει, και λίστα με τις χώρες ανά περιοχή
+// από εδώ προσθέτω χώρα, τη μετακινώ been<->wish, τη σβήνω, ή βλέπω τον χάρτη σε fullscreen
 export default function DiscoverScreen() {
   const router = useRouter();
   const db = useSQLiteContext();
@@ -46,6 +50,9 @@ export default function DiscoverScreen() {
   const borderColor = useThemeColor({}, 'icon');
   const textColor = useThemeColor({}, 'text');
 
+  // κάθε φορά που μπαίνω στην οθόνη: κοιτάει αν κάποιο ταξίδι έχει τελειώσει
+  // (έχει περάσει η ημερομηνία) και αν ναι το προσθέτει μόνο του στο been,
+  // μετά ξαναφέρνει τα been/wish από τη βάση
   useFocusEffect(
     useCallback(() => {
       (async () => {
@@ -58,11 +65,14 @@ export default function DiscoverScreen() {
   const beenSections = useMemo(() => groupCountriesByRegion(toCountryList(been)), [been]);
   const wishSections = useMemo(() => groupCountriesByRegion(toCountryList(wish)), [wish]);
 
+  // βλέπει σε ποια σελίδα είμαι (been=0, wish=1) μετά το scroll,
+  // απλά στρογγυλοποιεί τη θέση με βάση το πλάτος της οθόνης
   const handleScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const nextPage = Math.round(event.nativeEvent.contentOffset.x / width);
     setPage(nextPage);
   };
 
+  // ανοίγει το menu για μια χώρα - μπορείς να την πας στην άλλη λίστα (been<->wish) ή να τη σβήσεις εντελώς
   const openCountryMenu = (country: CountryInfo, status: CountryStatusKind) => {
     const otherStatus: CountryStatusKind = status === 'been' ? 'wish' : 'been';
     Alert.alert(`${country.flag} ${country.name}`, undefined, [
@@ -87,6 +97,7 @@ export default function DiscoverScreen() {
     { key: 'wish' as const, label: 'wish', color: STATUS_COLORS.wish, codes: wish, sections: wishSections },
   ];
 
+  // ποια σελίδα (been ή wish) δείχνουμε στο fullscreen modal, αν έχει ανοίξει κάποιο
   const fullscreenEntry = pages.find((entry) => entry.key === fullscreenKey);
 
   return (
@@ -104,6 +115,7 @@ export default function DiscoverScreen() {
         showsHorizontalScrollIndicator={false}
         onMomentumScrollEnd={handleScrollEnd}>
         {pages.map((entry) => {
+          // πόσο τοις εκατό των χωρών του κόσμου καλύπτει αυτή η λίστα
           const percent = TOTAL_COUNTRIES > 0 ? (entry.codes.size / TOTAL_COUNTRIES) * 100 : 0;
           return (
             <ScrollView key={entry.key} style={{ width }} contentContainerStyle={styles.page}>

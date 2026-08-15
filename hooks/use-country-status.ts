@@ -3,12 +3,14 @@ import { useSQLiteContext } from 'expo-sqlite';
 
 import type { CountryStatusKind, CountryStatusRow } from '@/types/country-status';
 
+// hook για το "been to" / "wish to visit" - κρατάει δύο sets με κωδικούς χωρών
 export function useCountryStatus() {
   const db = useSQLiteContext();
   const [been, setBeen] = useState<Set<string>>(new Set());
   const [wish, setWish] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
+  // φέρνει όλες τις γραμμές και τις χωρίζει σε been/wish sets
   const refresh = useCallback(async () => {
     setLoading(true);
     const rows = await db.getAllAsync<CountryStatusRow>('SELECT * FROM country_status');
@@ -21,6 +23,7 @@ export function useCountryStatus() {
     refresh();
   }, [refresh]);
 
+  // OR IGNORE ώστε να μην σκάσει αν βάλουμε ξανά την ίδια χώρα με το ίδιο status
   const addStatus = useCallback(
     async (countryCode: string, status: CountryStatusKind) => {
       await db.runAsync(

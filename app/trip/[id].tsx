@@ -25,6 +25,7 @@ import { getTripDays } from '@/utils/trip-days';
 
 const ACCENT = STATUS_COLORS.wish;
 
+// ένα emoji για κάθε τύπο καταχώρησης, έτσι ξεχωρίζουν πιο εύκολα στη λίστα
 const ENTRY_ICON: Record<ItineraryEntry['type'], string> = {
   flight: '✈️',
   accommodation: '🛏️',
@@ -33,6 +34,9 @@ const ENTRY_ICON: Record<ItineraryEntry['type'], string> = {
 
 type TabKey = 'itinerary' | 'map' | 'expenses' | 'info';
 
+// αυτή είναι η κεντρική οθόνη ενός ταξιδιού - πάνω δείχνει προορισμό, ημερομηνίες και countdown,
+// και έχει 4 tabs: Πρόγραμμα (τι κάνεις κάθε μέρα), Χάρτης, Έξοδα, και Info (καιρός, τηλέφωνα, φράσεις)
+// από εδώ προσθέτεις/αλλάζεις/σβήνεις πράγματα στο πρόγραμμα και στα έξοδα, και πας στις αποσκευές
 export default function TripDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const tripId = Number(id);
@@ -54,6 +58,7 @@ export default function TripDetailScreen() {
   const borderColor = useThemeColor({}, 'icon');
   const iconColor = useThemeColor({}, 'icon');
 
+  // φέρνει τα στοιχεία του ταξιδιού από τη βάση με βάση το tripId
   const loadTrip = useCallback(async () => {
     const result = await getTripById(tripId);
     setTrip(result ?? null);
@@ -63,18 +68,22 @@ export default function TripDetailScreen() {
     loadTrip();
   }, [loadTrip]);
 
+  // παίρνει τις ημερομηνίες του ταξιδιού και τις κάνει λίστα με μέρες (Μέρα 1, Μέρα 2...) για το tab bar
   const days = useMemo(() => (trip ? getTripDays(trip.start_date, trip.end_date) : []), [trip]);
 
+  // μόνο οι καταχωρήσεις της μέρας που έχω επιλέξει
   const dayEntries = useMemo(
     () => entries.filter((entry) => entry.day === selectedDay),
     [entries, selectedDay]
   );
 
+  // ανοίγει το sheet για να προσθέσω κάτι νέο στο πρόγραμμα
   const openAddSheet = () => {
     setEditingEntry(null);
     setSheetVisible(true);
   };
 
+  // menu για να επεξεργαστείς ή να σβήσεις μια καταχώρηση
   const openEntryMenu = (entry: ItineraryEntry) => {
     Alert.alert(entry.title, undefined, [
       {
@@ -93,6 +102,7 @@ export default function TripDetailScreen() {
     ]);
   };
 
+  // αν επεξεργάζομαι κάτι υπάρχον το ενημερώνει, αλλιώς φτιάχνει καινούριο
   const handleSubmitEntry = async (values: NewItineraryEntry) => {
     if (editingEntry) {
       await updateEntry(editingEntry.id, values);
@@ -101,15 +111,18 @@ export default function TripDetailScreen() {
     }
   };
 
+  // πάει στη λίστα αποσκευών αυτού του ταξιδιού
   const handleChecklistPress = () => {
     router.push({ pathname: '/trip-checklist/[id]', params: { id: String(tripId) } });
   };
 
+  // ανοίγει το sheet για νέο έξοδο
   const openAddExpenseSheet = () => {
     setEditingExpense(null);
     setExpenseSheetVisible(true);
   };
 
+  // menu για ένα έξοδο - επεξεργασία ή διαγραφή, ο τίτλος δείχνει κατηγορία και ποσό
   const openExpenseMenu = (expense: BudgetItem) => {
     Alert.alert(getExpenseCategory(expense.category).label, formatMoney(expense.amount), [
       {
@@ -128,6 +141,7 @@ export default function TripDetailScreen() {
     ]);
   };
 
+  // ίδια λογική με τα entries - update αν υπάρχει ήδη, αλλιώς νέο
   const handleSubmitExpense = async (values: NewBudgetItem) => {
     if (editingExpense) {
       await updateExpense(editingExpense.id, values);
@@ -136,6 +150,7 @@ export default function TripDetailScreen() {
     }
   };
 
+  // όσο δεν έχει φορτώσει ακόμα το ταξίδι δείχνουμε απλά ένα άδειο container
   if (!trip) {
     return <ThemedView style={styles.container} />;
   }
@@ -238,7 +253,14 @@ export default function TripDetailScreen() {
         </View>
       )}
 
-      {tab === 'map' && <TripMapView entries={dayEntries} />}
+      {tab === 'map' && (
+        <TripMapView
+          entries={dayEntries}
+          destination={trip.destination}
+          destinationLatitude={trip.destination_latitude}
+          destinationLongitude={trip.destination_longitude}
+        />
+      )}
 
       {tab === 'expenses' && (
         <View style={styles.tabContent}>

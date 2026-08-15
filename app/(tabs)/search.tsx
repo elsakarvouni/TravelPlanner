@@ -15,6 +15,8 @@ import { useFavorites } from '@/hooks/use-favorites';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { filtersToParams, matchesFilters } from '@/utils/destination-filters';
 
+// η οθόνη αναζήτησης - grid με τις ηπείρους (φιλτραρισμένες), κουμπιά για πτήσεις/καταλύματα
+// και πρόσβαση στα αγαπημένα. πατάς μια ήπειρο και πας στις χώρες της
 export default function SearchScreen() {
   const router = useRouter();
   const { favoriteIds, refresh: refreshFavorites } = useFavorites();
@@ -37,12 +39,15 @@ export default function SearchScreen() {
   const textColor = useThemeColor({}, 'text');
   const tintColor = useThemeColor({}, 'tint');
 
+  // ξαναφέρνει τα αγαπημένα κάθε φορά που έρχομαι σε αυτή την οθόνη
   useFocusEffect(
     useCallback(() => {
       refreshFavorites();
     }, [refreshFavorites])
   );
 
+  // μετράει πόσοι προορισμοί ταιριάζουν στα φίλτρα για κάθε ήπειρο,
+  // και κρατάει μόνο αυτές που έχουν έστω ένα αποτέλεσμα
   const continents = useMemo(() => {
     return CONTINENT_ORDER.map((continent) => {
       const count = DESTINATIONS.filter((d) => d.continent === continent && matchesFilters(d, filters)).length;
@@ -50,10 +55,12 @@ export default function SearchScreen() {
     }).filter((entry) => entry.count > 0);
   }, [filters]);
 
+  // ανοίγει το Skyscanner για να ψάξεις πτήσεις
   const handleFlightsPress = () => {
     WebBrowser.openBrowserAsync('https://www.skyscanner.com/');
   };
 
+  // ρωτάει αν θες Booking ή Airbnb για καταλύματα
   const handleAccommodationsPress = () => {
     Alert.alert('Καταλύματα', 'Πού θέλεις να ψάξεις;', [
       { text: 'Booking.com', onPress: () => WebBrowser.openBrowserAsync('https://www.booking.com/') },
@@ -62,6 +69,7 @@ export default function SearchScreen() {
     ]);
   };
 
+  // πάει στη λίστα χωρών της ηπείρου που διάλεξες, κρατώντας και τα φίλτρα
   const handleSelectContinent = (continent: Continent) => {
     router.push({
       pathname: '/continent/[continent]',
@@ -74,7 +82,7 @@ export default function SearchScreen() {
       <View style={styles.header}>
         <DestinationFilterButton activeCount={activeFilterCount} onPress={openSheet} />
         <ThemedText type="title" style={styles.title}>
-          Βρες Ιδέα
+          Find your Trip
         </ThemedText>
         <Pressable style={[styles.favoritesButton, { borderColor }]} onPress={() => router.push('/favorites')} hitSlop={8}>
           <IconSymbol name="heart" size={20} color={textColor} />

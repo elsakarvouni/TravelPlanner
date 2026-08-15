@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useSQLiteContext } from 'expo-sqlite';
 
+// hook για τους αγαπημένους προορισμούς - απλά ένα set με τα ids τους
 export function useFavorites() {
   const db = useSQLiteContext();
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
@@ -19,6 +20,7 @@ export function useFavorites() {
     refresh();
   }, [refresh]);
 
+  // αν είναι ήδη αγαπημένο το βγάζουμε, αλλιώς το προσθέτουμε
   const toggleFavorite = useCallback(
     async (destinationId: string) => {
       if (favoriteIds.has(destinationId)) {

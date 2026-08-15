@@ -35,6 +35,7 @@ const MAPPING = {
  * This ensures a consistent look across platforms, and optimal resource usage.
  * Icon `name`s are based on SF Symbols and require manual mapping to Material Icons.
  */
+// αυτό είναι το fallback για Android/web - παίρνει το ίδιο "name" σαν SF Symbol αλλά το μεταφράζει σε Material Icon μέσω του MAPPING
 export function IconSymbol({
   name,
   size = 24,

@@ -18,6 +18,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import type { BudgetItem, NewBudgetItem } from '@/types/budget';
 
 const ACCENT = STATUS_COLORS.wish;
+// σετ με τα "γνωστά" κλειδιά κατηγοριών, το χρησιμοποιώ για να ξέρω πότε κάτι είναι custom κατηγορία (other)
 const KNOWN_KEYS = new Set(EXPENSE_CATEGORIES.map((c) => c.key));
 
 type Props = {
@@ -27,6 +28,7 @@ type Props = {
   onSubmit: (item: NewBudgetItem) => Promise<void>;
 };
 
+// το sheet για προσθήκη/επεξεργασία ενός εξόδου - ανάλογα αν έχουμε editingItem γεμίζει τα πεδία ή ξεκινάει άδειο
 export function AddExpenseSheet({ visible, onClose, editingItem, onSubmit }: Props) {
   const [category, setCategory] = useState<ExpenseCategoryKey>('other');
   const [customLabel, setCustomLabel] = useState('');
@@ -39,10 +41,12 @@ export function AddExpenseSheet({ visible, onClose, editingItem, onSubmit }: Pro
   const borderColor = useThemeColor({}, 'icon');
   const backgroundColor = useThemeColor({}, 'background');
 
+  // κάθε φορά που ανοίγει το sheet, γεμίζουμε τα πεδία με το editingItem (αν υπάρχει) ή τα καθαρίζουμε για νέο έξοδο
   useEffect(() => {
     if (!visible) return;
 
     if (editingItem) {
+      // αν η κατηγορία του item δεν είναι μία από τις γνωστές, τη βάζουμε σαν "other" και δείχνουμε το custom label
       const isKnown = KNOWN_KEYS.has(editingItem.category as ExpenseCategoryKey);
       setCategory(isKnown ? (editingItem.category as ExpenseCategoryKey) : 'other');
       setCustomLabel(isKnown ? '' : editingItem.category);
@@ -56,9 +60,11 @@ export function AddExpenseSheet({ visible, onClose, editingItem, onSubmit }: Pro
     }
   }, [visible, editingItem]);
 
+  // δέχεται και κόμμα και τελεία για το ποσό (π.χ. 25,50 ή 25.50) - το κόμμα το κάνουμε τελεία πριν το Number()
   const parsedAmount = Number(amount.replace(',', '.'));
   const isValid = amount.trim().length > 0 && !Number.isNaN(parsedAmount) && parsedAmount > 0;
 
+  // αποθηκεύει το έξοδο - αν η κατηγορία είναι "other" και έχουμε γράψει custom label, στέλνουμε αυτό αντί για "other"
   const handleSave = async () => {
     if (!isValid) return;
 

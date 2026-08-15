@@ -9,10 +9,11 @@ type Props = {
   highlightColor: string;
 };
 
+// χάρτης όλου του κόσμου φτιαγμένος από SVG paths (ένα path ανά χώρα) - οι χώρες στο highlightedCodes βάφονται με το highlightColor
 export function WorldMap({ highlightedCodes, highlightColor }: Props) {
   const backgroundColor = useThemeColor({}, 'background');
   const defaultFill = useThemeColor({}, 'icon');
-  const strokeColor = backgroundColor;
+  const strokeColor = backgroundColor; // το περίγραμμα έχει το ίδιο χρώμα με το background, έτσι φαίνονται σαν "χωρισμένες" οι χώρες
 
   const paths = useMemo(() => WORLD_MAP_PATHS, []);
 

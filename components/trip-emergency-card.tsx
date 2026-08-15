@@ -15,15 +15,16 @@ const ROWS: { key: 'general' | 'police' | 'ambulance' | 'fire'; label: string; i
   { key: 'fire', label: 'Πυροσβεστική', icon: '🚒' },
 ];
 
+// κάρτα με τα νούμερα έκτακτης ανάγκης της χώρας προορισμού - αν δεν ξέρουμε τη χώρα ή δεν έχουμε στοιχεία, δείχνει το 112 σαν fallback
 export function TripEmergencyCard({ countryCode }: Props) {
   const borderColor = useThemeColor({}, 'icon');
   const iconColor = useThemeColor({}, 'icon');
 
   const numbers = countryCode ? EMERGENCY_NUMBERS[countryCode] : undefined;
-  const isFallback = !numbers;
+  const isFallback = !numbers; // δεν βρήκαμε τη χώρα στη λίστα μας, πάμε με το γενικό 112
   const values = numbers ?? FALLBACK_EMERGENCY;
 
-  const rows = ROWS.filter((row) => values[row.key]);
+  const rows = ROWS.filter((row) => values[row.key]); // δείχνουμε μόνο τις γραμμές που όντως έχουν νούμερο
 
   return (
     <View>

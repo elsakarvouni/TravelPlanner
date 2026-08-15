@@ -22,6 +22,7 @@ import type { TripDay } from '@/utils/trip-days';
 
 const ACCENT = STATUS_COLORS.wish;
 
+// ο time picker θέλει Date object, εμείς κρατάμε την ώρα σαν string "HH:mm" - άρα το μετατρέπουμε εδώ
 function timeStringToDate(time: string): Date {
   const date = new Date();
   const [hours, minutes] = time.split(':').map(Number);
@@ -46,6 +47,7 @@ type Props = {
   onSubmit: (entry: NewItineraryEntry) => Promise<void>;
 };
 
+// sheet 2 βημάτων: πρώτα διαλέγεις τύπο (πτήση/διαμονή/δραστηριότητα), μετά συμπληρώνεις τα στοιχεία
 export function AddItineraryEntrySheet({ visible, onClose, days, defaultDay, editingEntry, onSubmit }: Props) {
   const [step, setStep] = useState<'type' | 'details'>('type');
   const [type, setType] = useState<ItineraryEntryType>('activity');
@@ -65,6 +67,8 @@ export function AddItineraryEntrySheet({ visible, onClose, days, defaultDay, edi
   const borderColor = useThemeColor({}, 'icon');
   const backgroundColor = useThemeColor({}, 'background');
 
+  // όταν ανοίγει το sheet, αν επεξεργαζόμαστε υπάρχουσα εγγραφή πάμε κατευθείαν στο βήμα των λεπτομερειών,
+  // αλλιώς ξεκινάμε από την επιλογή τύπου με καθαρά πεδία
   useEffect(() => {
     if (!visible) return;
 
@@ -95,17 +99,20 @@ export function AddItineraryEntrySheet({ visible, onClose, days, defaultDay, edi
     }
   }, [visible, editingEntry, defaultDay]);
 
+  // πατάς πάνω σε "πτήση/διαμονή/δραστηριότητα" και πάει στο βήμα με τις λεπτομέρειες
   const handlePickType = (picked: ItineraryEntryType) => {
     setType(picked);
     setStep('details');
   };
 
+  // κοινό handler για το time picker και στα δύο platforms - αν το έκλεισες χωρίς να διαλέξεις, δεν κάνουμε τίποτα
   const handleTimeChange = (event: { type: string }, selectedDate?: Date) => {
     if (Platform.OS === 'android') setShowTimePicker(false);
     if (event.type === 'dismissed' || !selectedDate) return;
     setTime(format(selectedDate, 'HH:mm'));
   };
 
+  // στο android το picker είναι native dialog, στο ios το δείχνουμε inline (spinner) γι' αυτό το branching
   const openTimePicker = () => {
     if (Platform.OS === 'android') {
       DateTimePickerAndroid.open({
@@ -119,6 +126,7 @@ export function AddItineraryEntrySheet({ visible, onClose, days, defaultDay, edi
     }
   };
 
+  // αποθηκεύει την εγγραφή - για πτήσεις το subtitle είναι λεπτομέρειες, για τα άλλα είναι η διεύθυνση
   const handleSave = async () => {
     if (!title.trim() || !time.trim()) return;
 

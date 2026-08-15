@@ -1,13 +1,12 @@
 import { format } from 'date-fns';
 import type { SQLiteDatabase } from 'expo-sqlite';
 
-/**
- * Marks the destination country of any trip that has ended as "been",
- * once, so it doesn't fight a user who deliberately removes it later.
- */
+// όταν ένα ταξίδι τελειώσει (η ημερομηνία λήξης έχει περάσει), βάζουμε αυτόματα τη χώρα στα "been" - αλλά μόνο
+// μία φορά ανά ταξίδι (flag auto_added_been), έτσι αν ο χρήστης το αφαιρέσει μετά με το χέρι δεν ξαναεμφανίζεται
 export async function applyCompletedTripsToBeen(db: SQLiteDatabase) {
   const today = format(new Date(), 'yyyy-MM-dd');
 
+  // ψάχνουμε ταξίδια που έχουν τελειώσει και δεν έχουν ήδη επεξεργαστεί (auto_added_been = 0)
   const completedTrips = await db.getAllAsync<{ id: number; destination_country_code: string }>(
     `SELECT id, destination_country_code FROM trips
      WHERE auto_added_been = 0 AND end_date < ? AND destination_country_code IS NOT NULL`,
@@ -21,6 +20,7 @@ export async function applyCompletedTripsToBeen(db: SQLiteDatabase) {
       'been'
     );
     // A country you've now been to shouldn't linger on the wishlist.
+    // (μια χώρα που πλέον έχεις επισκεφτεί δεν έχει νόημα να είναι ακόμα στη wishlist)
     await db.runAsync(
       'DELETE FROM country_status WHERE country_code = ? AND status = ?',
       trip.destination_country_code,
@@ -29,5 +29,5 @@ export async function applyCompletedTripsToBeen(db: SQLiteDatabase) {
     await db.runAsync('UPDATE trips SET auto_added_been = 1 WHERE id = ?', trip.id);
   }
 
-  return completedTrips.length > 0;
+  return completedTrips.length > 0; // true αν άλλαξε κάτι, χρήσιμο για το UI να ξέρει αν πρέπει να κάνει refresh
 }

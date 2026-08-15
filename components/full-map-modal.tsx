@@ -16,12 +16,14 @@ type Props = {
   highlightColor: string;
 };
 
+// fullscreen modal με τον παγκόσμιο χάρτη, zoomable, με τις χώρες που έχεις επισκεφτεί highlighted
 export function FullMapModal({ visible, onClose, highlightedCodes, highlightColor }: Props) {
   const insets = useSafeAreaInsets();
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor({}, 'icon');
 
+  // όσο είναι ανοιχτό το modal κλειδώνουμε σε landscape (πιο βολικό για χάρτη), και το ξανακλειδώνουμε portrait όταν κλείνει
   useEffect(() => {
     if (!visible) return;
 

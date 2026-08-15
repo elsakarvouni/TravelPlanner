@@ -5,6 +5,9 @@ export type EmergencyNumbers = {
   fire?: string;
 };
 
+// λίστα με τηλέφωνα έκτακτης ανάγκης ανά χώρα (key = country code π.χ. GR, US) - αν η χώρα έχει ένα ενιαίο νούμερο
+// το βάζουμε σε general, αλλιώς ξεχωριστά police/ambulance/fire. Δεν είναι 100% εγγυημένο σωστό, οπότε καλό
+// είναι να το επιβεβαιώνεις επιτόπου αν είναι κάτι σοβαρό
 // Numbers most useful to a visiting tourist. Where a country has a single
 // unified emergency number it's set as `general`; otherwise the specific
 // services are listed. Always double-check locally if it really matters —
@@ -135,4 +138,5 @@ export const EMERGENCY_NUMBERS: Record<string, EmergencyNumbers> = {
   FJ: { police: '917', ambulance: '911', fire: '910' },
 };
 
+// αν δεν έχουμε καν τη χώρα στη λίστα, πάμε με το 112 σαν γενικό fallback (λειτουργεί σε πολλά δίκτυα διεθνώς)
 export const FALLBACK_EMERGENCY: EmergencyNumbers = { general: '112' };

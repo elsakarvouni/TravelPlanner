@@ -13,8 +13,10 @@ type Props = {
   placeholder?: string;
 };
 
+// text input με dropdown από προτάσεις τοποθεσιών ενώ πληκτρολογείς - το search γίνεται μέσω του usePlaceSearch hook
 export function PlaceAutocompleteInput({ value, onChangeText, onSelectPlace, onFocus, placeholder }: Props) {
   const [showSuggestions, setShowSuggestions] = useState(false);
+  // δεν ψάχνουμε τίποτα αν το dropdown είναι κλειστό - γι' αυτό στέλνουμε κενό string στο hook όταν showSuggestions=false
   const { results, loading } = usePlaceSearch(showSuggestions ? value : '');
 
   const textColor = useThemeColor({}, 'text');
@@ -22,6 +24,7 @@ export function PlaceAutocompleteInput({ value, onChangeText, onSelectPlace, onF
   const borderColor = useThemeColor({}, 'icon');
   const backgroundColor = useThemeColor({}, 'background');
 
+  // όταν διαλέγεις μια πρόταση, γεμίζει το input με το label της και κλείνει το dropdown
   const handleSelect = (place: PlaceSuggestion) => {
     onChangeText(place.label);
     onSelectPlace?.(place);

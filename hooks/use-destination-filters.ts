@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import type { DestinationTag, DurationBucket, Season } from '@/constants/destinations';
 import { paramsToFilters, type DestinationFilters } from '@/utils/destination-filters';
 
+// βοηθητική - βάζει/βγάζει μια τιμή από ένα Set, επιστρέφοντας καινούριο Set (δεν πειράζουμε το αρχικό)
 function toggleInSet<T>(set: Set<T>, value: T): Set<T> {
   const next = new Set(set);
   if (next.has(value)) {
@@ -13,7 +14,9 @@ function toggleInSet<T>(set: Set<T>, value: T): Set<T> {
   return next;
 }
 
+// hook για τα φίλτρα προορισμών (tags, εποχές, διάρκεια) - παίρνει και αρχικές τιμές από URL params
 export function useDestinationFilters(initialParams?: { tags?: string; seasons?: string; durations?: string }) {
+  // useMemo με κενό array γιατί θέλουμε να διαβάσουμε τα αρχικά params μόνο μία φορά, στην πρώτη φόρτωση
   const initial = useMemo(() => paramsToFilters(initialParams ?? {}), []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [selectedTags, setSelectedTags] = useState<Set<DestinationTag>>(initial.tags);
@@ -26,6 +29,7 @@ export function useDestinationFilters(initialParams?: { tags?: string; seasons?:
     [selectedTags, selectedSeasons, selectedDurations]
   );
 
+  // πόσα φίλτρα είναι ενεργά συνολικά, για το badge στο κουμπί φίλτρων
   const activeFilterCount = selectedTags.size + selectedSeasons.size + selectedDurations.size;
 
   return {

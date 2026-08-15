@@ -2,6 +2,7 @@ import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
 import { PlatformPressable } from '@react-navigation/elements';
 import * as Haptics from 'expo-haptics';
 
+// wrapper γύρω από το tab button που απλά προσθέτει το haptic feedback όταν το πατάς (μόνο ios)
 export function HapticTab(props: BottomTabBarButtonProps) {
   return (
     <PlatformPressable

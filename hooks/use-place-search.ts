@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
+// μια πρόταση τοποθεσίας που γυρνάει το Photon API
 export type PlaceSuggestion = {
   id: string;
   label: string;
@@ -8,6 +9,7 @@ export type PlaceSuggestion = {
   countryCode: string | null;
 };
 
+// το Photon (komoot) είναι δωρεάν geocoding API, το χρησιμοποιούμε για αναζήτηση τοποθεσιών
 const PHOTON_URL = 'https://photon.komoot.io/api/';
 
 type PhotonFeature = {
@@ -22,6 +24,7 @@ type PhotonFeature = {
   };
 };
 
+// hook για αναζήτηση τοποθεσιών καθώς πληκτρολογεί ο χρήστης (autocomplete), με debounce
 export function usePlaceSearch(query: string) {
   const [results, setResults] = useState<PlaceSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
@@ -30,6 +33,7 @@ export function usePlaceSearch(query: string) {
   useEffect(() => {
     const trimmed = query.trim();
 
+    // κάτω από 2 χαρακτήρες δεν έχει νόημα να ψάξουμε, καθαρίζουμε τα αποτελέσματα
     if (trimmed.length < 2) {
       controllerRef.current?.abort();
       setResults([]);
@@ -37,7 +41,9 @@ export function usePlaceSearch(query: string) {
       return;
     }
 
+    // περιμένουμε 300ms πριν κάνουμε το request, ώστε να μην σφυροκοπάμε το API σε κάθε πλήκτρο
     const timeout = setTimeout(async () => {
+      // ακυρώνουμε τυχόν προηγούμενο request που εκκρεμεί, θέλουμε μόνο το πιο πρόσφατο
       controllerRef.current?.abort();
       const controller = new AbortController();
       controllerRef.current = controller;
@@ -51,6 +57,7 @@ export function usePlaceSearch(query: string) {
         const suggestions: PlaceSuggestion[] = ((data.features ?? []) as PhotonFeature[])
           .map((feature) => {
             const props = feature.properties ?? {};
+            // φτιάχνουμε ένα ωραίο label πχ "Αθήνα, Αττική, Ελλάδα" κρατώντας μόνο ό,τι υπάρχει
             const parts = [props.name, props.state, props.country].filter(
               (part): part is string => Boolean(part)
             );
@@ -68,6 +75,7 @@ export function usePlaceSearch(query: string) {
 
         setResults(suggestions);
       } catch (error) {
+        // αν το error είναι απλά επειδή ακυρώσαμε εμείς το request, δεν το θεωρούμε πρόβλημα
         if ((error as Error).name !== 'AbortError') {
           setResults([]);
         }

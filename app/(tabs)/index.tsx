@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { Alert, FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { Alert, FlatList, Linking, Pressable, StyleSheet, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 
@@ -15,6 +15,8 @@ import { STATUS_COLORS } from '@/constants/travel-status';
 
 const ACCENT_COLOR = STATUS_COLORS.wish;
 
+// η αρχική οθόνη - δείχνει τα ταξίδια μου σε καρτέλες, με εικόνα, πόσες μέρες μένουν
+// και τον προορισμό. από εδώ προσθέτω νέο ταξίδι, το επεξεργάζομαι/σβήνω, ή ανοίγω το AI chat
 export default function HomeScreen() {
   const router = useRouter();
   const { trips, loading, refresh, deleteTrip } = useTrips();
@@ -23,12 +25,39 @@ export default function HomeScreen() {
   const textColor = useThemeColor({}, 'text');
   const iconColor = useThemeColor({}, 'icon');
 
+  // κάθε φορά που ξαναμπαίνω στην οθόνη ξαναφέρνει τα ταξίδια
+  // (π.χ. αν μόλις πρόσθεσα ή επεξεργάστηκα κάποιο)
   useFocusEffect(
     useCallback(() => {
       refresh();
     }, [refresh])
   );
 
+  // δοκιμάζει να ανοίξει την εφαρμογή Gemini αν την έχεις εγκατεστημένη,
+  // αλλιώς το ανοίγει απλά στο browser. Τυλιγμένο σε try/catch γιατί αν κάτι
+  // από τα Linking calls πετάξει σφάλμα (π.χ. παροδικό OS glitch), θέλουμε
+  // πάντα να καταλήξουμε στο web fallback αντί να μείνει το κουμπί "νεκρό".
+  const handleAiChatPress = async () => {
+    const appSchemes = ['googlegemini://', 'gemini://'];
+
+    try {
+      for (const scheme of appSchemes) {
+        const canOpen = await Linking.canOpenURL(scheme);
+        if (canOpen) {
+          await Linking.openURL(scheme);
+          return;
+        }
+      }
+    } catch {
+      // αγνοούμε - πέφτουμε στο web fallback παρακάτω
+    }
+
+    Linking.openURL('https://gemini.google.com/app').catch(() => {
+      Alert.alert('Δεν ήταν δυνατό το άνοιγμα', 'Δοκίμασε ξανά αργότερα.');
+    });
+  };
+
+  // menu με επιλογές για ένα ταξίδι - επεξεργασία ή διαγραφή
   const openTripMenu = (trip: Trip) => {
     Alert.alert(trip.title, undefined, [
       {
@@ -48,17 +77,24 @@ export default function HomeScreen() {
     <ThemedView style={styles.container}>
       <View style={styles.header}>
         <View>
-          <ThemedText type="title">Τα ταξίδια μου</ThemedText>
+          <ThemedText type="title">My trips</ThemedText>
           {trips.length > 0 && (
             <ThemedText style={[styles.headerSubtitle, { color: iconColor }]}>
               {trips.length} {trips.length === 1 ? 'προγραμματισμένο ταξίδι' : 'προγραμματισμένα ταξίδια'}
             </ThemedText>
           )}
         </View>
-        <Pressable style={[styles.newTripButton, { backgroundColor: ACCENT_COLOR }]} onPress={() => router.push('/add-trip')}>
-          <IconSymbol name="plus" size={16} color="#fff" />
-          <ThemedText style={styles.newTripButtonLabel}>Νέο ταξίδι</ThemedText>
-        </Pressable>
+        <View style={styles.headerButtons}>
+          <Pressable style={[styles.aiChatButton, { borderColor }]} onPress={handleAiChatPress} hitSlop={8}>
+            <ThemedText style={styles.aiChatIcon}>✨</ThemedText>
+          </Pressable>
+          <Pressable
+            style={[styles.newTripButton, { backgroundColor: ACCENT_COLOR }]}
+            onPress={() => router.push('/add-trip')}>
+            <IconSymbol name="plus" size={16} color="#fff" />
+            <ThemedText style={styles.newTripButtonLabel}>Νέο ταξίδι</ThemedText>
+          </Pressable>
+        </View>
       </View>
 
       {!loading && trips.length === 0 ? (
@@ -82,6 +118,7 @@ export default function HomeScreen() {
           refreshing={loading}
           onRefresh={refresh}
           renderItem={({ item }) => {
+            // βρίσκει εικόνα για το εξώφυλλο της κάρτας, αν δεν υπάρχει μένει null
             const coverImage = getTripCoverImage(item);
             return (
               <Pressable
@@ -153,6 +190,22 @@ const styles = StyleSheet.create({
   headerSubtitle: {
     marginTop: 2,
     fontSize: 13,
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  aiChatButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  aiChatIcon: {
+    fontSize: 18,
   },
   newTripButton: {
     flexDirection: 'row',

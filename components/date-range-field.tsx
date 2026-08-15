@@ -15,6 +15,7 @@ type Props = {
   onChange: (startDate: string, endDate: string) => void;
 };
 
+// πεδίο που ανοίγει calendar modal για να διαλέξεις εύρος ημερομηνιών (check-in/check-out στυλ)
 export function DateRangeField({ startDate, endDate, onChange }: Props) {
   const [visible, setVisible] = useState(false);
   const [draftStart, setDraftStart] = useState(startDate);
@@ -26,12 +27,15 @@ export function DateRangeField({ startDate, endDate, onChange }: Props) {
   const backgroundColor = useThemeColor({}, 'background');
   const tintColor = useThemeColor({}, 'tint');
 
+  // ανοίγει το modal, ξεκινώντας το draft από τις τρέχουσες τιμές (σε περίπτωση που ακυρώσει δεν χάνουμε τίποτα)
   const openPicker = () => {
     setDraftStart(startDate);
     setDraftEnd(endDate);
     setVisible(true);
   };
 
+  // λογική για επιλογή range: 1ο tap = αρχή, 2ο tap = τέλος. Αν ξαναπατήσεις μετά που έχεις και τα δύο, ξαναξεκινάει.
+  // αν διαλέξεις ημερομηνία πριν την αρχή, τη βάζουμε ως νέα αρχή (reset του τέλους)
   const handleDayPress = (day: DateData) => {
     if (!draftStart || (draftStart && draftEnd)) {
       setDraftStart(day.dateString);
@@ -48,6 +52,7 @@ export function DateRangeField({ startDate, endDate, onChange }: Props) {
     setDraftEnd(day.dateString);
   };
 
+  // φτιάχνει το object marked dates που θέλει το react-native-calendars, χρωματίζοντας όλο το εύρος σαν "period"
   const markedDates = useMemo(() => {
     if (!draftStart) return {};
 
@@ -57,6 +62,7 @@ export function DateRangeField({ startDate, endDate, onChange }: Props) {
       };
     }
 
+    // παίρνουμε όλες τις μέρες ανάμεσα σε αρχή-τέλος, και σημειώνουμε ποια είναι η πρώτη/τελευταία για το στρογγυλό άκρο
     const days = eachDayOfInterval({ start: parseISO(draftStart), end: parseISO(draftEnd) });
     const marks: Record<string, any> = {};
     days.forEach((day, index) => {
@@ -71,6 +77,7 @@ export function DateRangeField({ startDate, endDate, onChange }: Props) {
     return marks;
   }, [draftStart, draftEnd]);
 
+  // στέλνει το επιλεγμένο εύρος προς τα πάνω μόνο αν έχουμε και τις δύο ημερομηνίες
   const handleConfirm = () => {
     if (draftStart && draftEnd) {
       onChange(draftStart, draftEnd);

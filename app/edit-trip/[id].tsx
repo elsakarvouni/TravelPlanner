@@ -8,6 +8,8 @@ import { TripForm } from '@/components/trip-form';
 import { useTrips } from '@/hooks/use-trips';
 import type { Trip } from '@/types/trip';
 
+// modal για επεξεργασία ταξιδιού που υπάρχει ήδη - φέρνει το ταξίδι από τη βάση με το id,
+// δείχνει loading/error ανάλογα, και χρησιμοποιεί το TripForm ήδη γεμάτο με τα στοιχεία του
 export default function EditTripScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -16,6 +18,7 @@ export default function EditTripScreen() {
   const [trip, setTrip] = useState<Trip | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // φέρνει το ταξίδι με βάση το id - έρχεται ως string από το URL οπότε το κάνω Number
   useEffect(() => {
     (async () => {
       const row = await getTripById(Number(id));
@@ -46,6 +49,7 @@ export default function EditTripScreen() {
       submitLabel="Αποθήκευση αλλαγών"
       savingLabel="Αποθήκευση..."
       onSubmit={async (values) => {
+        // ενημερώνει το ταξίδι στη βάση και γυρνάει πίσω
         await updateTrip(trip.id, values);
         router.back();
       }}

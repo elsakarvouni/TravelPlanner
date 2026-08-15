@@ -8,6 +8,7 @@ export type LanguagePhrasebook = {
   phrases: Phrase[];
 };
 
+// μικρό βοηθητικό ώστε να μη γράφω κάθε φορά { greek: ..., local: ... } για τις ίδιες 8 βασικές φράσεις σε κάθε γλώσσα
 function makePhrases(
   hello: string,
   thanks: string,
@@ -30,6 +31,8 @@ function makePhrases(
   ];
 }
 
+// λίστα με βασικές φράσεις ανά γλώσσα - key = κωδικός γλώσσας (ISO 639-3, π.χ. eng, ita, ell), βρίσκεται μέσω
+// του country-languages mapping σε άλλο αρχείο. Απλά φράσεις-επιβίωσης για τουρίστες, όχι πλήρες λεξικό
 export const PHRASEBOOK: Record<string, LanguagePhrasebook> = {
   eng: {
     languageName: 'Αγγλικά',

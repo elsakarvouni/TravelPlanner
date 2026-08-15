@@ -9,6 +9,7 @@ type Props = {
   onPress: () => void;
 };
 
+// κουμπάκι φίλτρου με μπάτζ που δείχνει πόσα φίλτρα είναι ενεργά αυτή τη στιγμή
 export function DestinationFilterButton({ activeCount, onPress }: Props) {
   const borderColor = useThemeColor({}, 'icon');
   const textColor = useThemeColor({}, 'text');

@@ -7,16 +7,19 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
+// custom κάτω μπάρα με τα 3 κουμπιά (search/home/discover) - φτιαγμένη χειροκίνητα αντί για το default tab bar
 export function BottomTabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
 
+  // ψάχνουμε τα routes με βάση το όνομά τους γιατί δεν ξέρουμε σε τι σειρά είναι registered
   const searchRoute = state.routes.find((route) => route.name === 'search');
   const homeRoute = state.routes.find((route) => route.name === 'index');
   const discoverRoute = state.routes.find((route) => route.name === 'discover');
   const activeRouteName = state.routes[state.index]?.name;
 
+  // πάει σε άλλο tab, με λίγο haptic feedback στο ios - δεν κάνει navigate αν είμαστε ήδη εκεί
   const goTo = (routeName?: string) => {
     if (!routeName) return;
     if (Platform.OS === 'ios') {

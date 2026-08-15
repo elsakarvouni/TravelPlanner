@@ -16,6 +16,8 @@ export const unstable_settings = {
   anchor: '(tabs)',
 };
 
+// λέει στην εφαρμογή τι να κάνει με τις ειδοποιήσεις όσο είναι ανοιχτή -
+// να δείχνει banner, να μπαίνουν στη λίστα, να παίζει ήχος, αλλά όχι badge number
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowBanner: true,
@@ -25,6 +27,8 @@ Notifications.setNotificationHandler({
   }),
 });
 
+// βοηθητικό component που δεν δείχνει τίποτα, απλά στήνει τις ειδοποιήσεις
+// για τα επόμενα ταξίδια - ζητάει άδεια και τις προγραμματίζει με βάση τη βάση
 function TripNotificationsSetup() {
   const db = useSQLiteContext();
 
@@ -38,15 +42,19 @@ function TripNotificationsSetup() {
   return null;
 }
 
+// το root layout όλης της εφαρμογής - ανοίγει τη βάση SQLite, βάζει το θέμα (light/dark),
+// στήνει το stack με όλες τις οθόνες/modals και κλειδώνει την οθόνη σε portrait
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
+  // κλειδώνω σε portrait, δεν έχει νόημα landscape σε αυτή την εφαρμογή
   useEffect(() => {
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
   }, []);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      {/* ανοίγει (ή φτιάχνει) τη βάση και τρέχει τα migrations πριν δείξει οτιδήποτε άλλο */}
       <SQLiteProvider databaseName={DATABASE_NAME} onInit={migrateDbIfNeeded}>
         <TripNotificationsSetup />
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>

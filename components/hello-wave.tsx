@@ -1,5 +1,6 @@
 import Animated from 'react-native-reanimated';
 
+// το χεράκι 👋 που κουνιέται - καθαρό animation μέσω css-like keyframes του reanimated, τίποτα πολύπλοκο
 export function HelloWave() {
   return (
     <Animated.Text

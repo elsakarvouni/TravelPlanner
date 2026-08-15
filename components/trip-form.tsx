@@ -15,6 +15,7 @@ type Props = {
   onSubmit: (values: NewTrip) => Promise<void>;
 };
 
+// φόρμα για δημιουργία/επεξεργασία ταξιδιού - χρησιμοποιείται και στα δύο flows, γι' αυτό παίρνει initialValues προαιρετικά
 export function TripForm({ initialValues, submitLabel, savingLabel, onSubmit }: Props) {
   const textColor = useThemeColor({}, 'text');
   const placeholderColor = useThemeColor({}, 'icon');
@@ -35,6 +36,7 @@ export function TripForm({ initialValues, submitLabel, savingLabel, onSubmit }: 
   const [endDate, setEndDate] = useState(initialValues?.end_date ?? '');
   const [saving, setSaving] = useState(false);
 
+  // validation βασικό (μη κενά πεδία) και μετά καλεί το onSubmit που δίνεται απ' έξω (create ή update ανάλογα την οθόνη)
   const handleSave = async () => {
     if (!title.trim() || !destination.trim() || !startDate.trim() || !endDate.trim()) {
       Alert.alert('Λείπουν στοιχεία', 'Συμπλήρωσε όλα τα πεδία.');
@@ -74,12 +76,14 @@ export function TripForm({ initialValues, submitLabel, savingLabel, onSubmit }: 
       <PlaceAutocompleteInput
         value={destination}
         onChangeText={(text) => {
+          // αν ο χρήστης αλλάζει το κείμενο με το χέρι, χάνουμε τα coords/country - ξαναγίνεται valid μόνο αν διαλέξει από τη λίστα
           setDestination(text);
           setDestinationCountryCode(null);
           setDestinationLatitude(null);
           setDestinationLongitude(null);
         }}
         onSelectPlace={(place) => {
+          // εδώ παίρνουμε τα καλά στοιχεία (χώρα + coords) όταν ο χρήστης επιλέγει πραγματικό τόπο από το autocomplete
           setDestinationCountryCode(place.countryCode);
           setDestinationLatitude(place.lat);
           setDestinationLongitude(place.lon);

@@ -4,6 +4,7 @@ import { type ComponentProps } from 'react';
 
 type Props = Omit<ComponentProps<typeof Link>, 'href'> & { href: Href & string };
 
+// link που στο web ανοίγει κανονικά νέο tab, αλλά στο κινητό ανοίγει in-app browser αντί να βγει έξω από την app
 export function ExternalLink({ href, ...rest }: Props) {
   return (
     <Link

@@ -15,8 +15,11 @@ import { useFavorites } from '@/hooks/use-favorites';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { matchesFilters } from '@/utils/destination-filters';
 
+// map για να βρίσκω γρήγορα τον κωδικό μιας χώρας από το όνομά της
 const COUNTRY_CODE_BY_NAME = new Map(UN_COUNTRIES.map((country) => [country.name.toLowerCase(), country.code]));
 
+// λίστα πόλεων μέσα σε μια χώρα - grid με τις πόλεις που ταιριάζουν στα φίλτρα,
+// μπορείς να τις κάνεις αγαπημένες με την καρδούλα. αν διαλέξεις μία πας κατευθείαν στη φόρμα νέου ταξιδιού
 export default function CountryScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{
@@ -49,6 +52,7 @@ export default function CountryScreen() {
     [params.country, filters]
   );
 
+  // πάει στη φόρμα νέου ταξιδιού με ήδη συμπληρωμένο τον προορισμό
   const handleSelectDestination = (destination: Destination) => {
     const countryCode = COUNTRY_CODE_BY_NAME.get(destination.country.toLowerCase()) ?? '';
     router.push({

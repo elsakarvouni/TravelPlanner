@@ -1,6 +1,7 @@
 import { SymbolView, SymbolViewProps, SymbolWeight } from 'expo-symbols';
 import { StyleProp, ViewStyle } from 'react-native';
 
+// wrapper γύρω από τα native SF Symbols του iOS - αυτό το αρχείο τρέχει μόνο σε iOS (.ios.tsx suffix)
 export function IconSymbol({
   name,
   size = 24,

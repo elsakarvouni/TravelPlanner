@@ -12,6 +12,8 @@ import { useDestinationFilters } from '@/hooks/use-destination-filters';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { filtersToParams, matchesFilters } from '@/utils/destination-filters';
 
+// λίστα χωρών για μια ήπειρο - grid με τις χώρες που έχουν έστω έναν προορισμό
+// που ταιριάζει στα φίλτρα, και πόσους προορισμούς έχει η καθεμία. διαλέγεις χώρα και πας στις πόλεις της
 export default function ContinentScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{
@@ -39,6 +41,8 @@ export default function ContinentScreen() {
     clear,
   } = useDestinationFilters(params);
 
+  // ομαδοποιεί τους προορισμούς ανά χώρα, κρατάει μία εικόνα (του πρώτου που βρίσκει)
+  // και μετράει πόσοι προορισμοί υπάρχουν σε κάθε χώρα
   const countries = useMemo(() => {
     const matches = DESTINATIONS.filter((d) => d.continent === params.continent && matchesFilters(d, filters));
     const byCountry = new Map<string, { country: string; imageUrl: string; count: number }>();

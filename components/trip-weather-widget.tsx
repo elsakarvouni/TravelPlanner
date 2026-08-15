@@ -12,11 +12,13 @@ type Props = {
   endDate: string;
 };
 
+// δείχνει καιρό + ανατολή/δύση για το ταξίδι - χρειάζεται συντεταγμένες, αλλιώς δείχνει μήνυμα να τις συμπληρώσει ο χρήστης
 export function TripWeatherWidget({ latitude, longitude, startDate, endDate }: Props) {
   const { weather, loading } = useTripWeather(latitude, longitude, startDate, endDate);
   const borderColor = useThemeColor({}, 'icon');
   const iconColor = useThemeColor({}, 'icon');
 
+  // χωρίς lat/lon δεν έχουμε πού να ζητήσουμε καιρό, βγάζουμε μήνυμα κατευθείαν
   if (latitude == null || longitude == null) {
     return (
       <View style={styles.container}>
@@ -54,6 +56,7 @@ export function TripWeatherWidget({ latitude, longitude, startDate, endDate }: P
           {Math.round(weather.avgHigh)}° / {Math.round(weather.avgLow)}°
         </ThemedText>
         <ThemedText style={[styles.caption, { color: iconColor }]}>
+          {/* αν το ταξίδι είναι πολύ μακριά στο μέλλον δεν υπάρχει πρόγνωση, οπότε δείχνουμε ιστορικό μέσο όρο αντί για forecast */}
           {weather.source === 'forecast'
             ? `Πρόγνωση καιρού · ${Math.round(weather.precipitationChance)}% πιθανότητα βροχής`
             : `Μέσος καιρός προηγούμενων ετών · ${Math.round(weather.precipitationChance)}% πιθανότητα βροχής`}

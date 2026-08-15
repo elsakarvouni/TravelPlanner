@@ -4,6 +4,8 @@ import { StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
+// αυτό είναι απλά boilerplate από το Expo template, δεν το χρησιμοποιώ πουθενά -
+// δείχνει έναν τίτλο και ένα link για να πας πίσω στην αρχική
 export default function ModalScreen() {
   return (
     <ThemedView style={styles.container}>

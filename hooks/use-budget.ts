@@ -3,11 +3,13 @@ import { useSQLiteContext } from 'expo-sqlite';
 
 import type { BudgetItem, NewBudgetItem } from '@/types/budget';
 
+// hook για το budget ενός ταξιδιού - φέρνει τα έξοδα, προσθέτει/αλλάζει/σβήνει, και υπολογίζει το σύνολο
 export function useBudget(tripId: number) {
   const db = useSQLiteContext();
   const [items, setItems] = useState<BudgetItem[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // ξαναφορτώνει τα budget items από τη βάση, τα πιο καινούρια πρώτα
   const refresh = useCallback(async () => {
     setLoading(true);
     const rows = await db.getAllAsync<BudgetItem>(
@@ -18,6 +20,7 @@ export function useBudget(tripId: number) {
     setLoading(false);
   }, [db, tripId]);
 
+  // φόρτωση με το που ανοίγει το hook
   useEffect(() => {
     refresh();
   }, [refresh]);
@@ -36,6 +39,7 @@ export function useBudget(tripId: number) {
     [db, tripId, refresh]
   );
 
+  // ενημέρωση υπάρχοντος εξόδου
   const updateItem = useCallback(
     async (id: number, item: NewBudgetItem) => {
       await db.runAsync(
@@ -58,6 +62,7 @@ export function useBudget(tripId: number) {
     [db, refresh]
   );
 
+  // απλά αθροίζουμε όλα τα ποσά για να βγει το σύνολο του budget
   const total = items.reduce((sum, item) => sum + item.amount, 0);
 
   return { items, loading, total, refresh, addItem, updateItem, deleteItem };

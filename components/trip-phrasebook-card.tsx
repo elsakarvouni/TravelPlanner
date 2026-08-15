@@ -9,6 +9,7 @@ type Props = {
   countryCode: string | null;
 };
 
+// κάρτα με βασικές φράσεις στη γλώσσα της χώρας προορισμού - πάει χώρα -> γλώσσα -> φράσεις μέσα από δύο lookup tables
 export function TripPhrasebookCard({ countryCode }: Props) {
   const borderColor = useThemeColor({}, 'icon');
   const iconColor = useThemeColor({}, 'icon');

@@ -1,8 +1,10 @@
+// αυτά είναι τα φίλτρα που μπορείς να βάλεις όταν ψάχνεις προορισμό (tag, εποχή, πόσες μέρες)
 export type DestinationTag = 'beach' | 'nature' | 'shopping' | 'relaxation' | 'culture' | 'nightlife';
 export type Season = 'winter' | 'spring' | 'summer' | 'autumn';
 export type DurationBucket = 'short' | 'medium' | 'long';
 export type Continent = 'Africa' | 'Americas' | 'Asia' | 'Europe' | 'Oceania';
 
+// ένας προορισμός (πόλη/νησί κλπ) που εμφανίζεται στο "Βρες Ιδέα" - η εικόνα είναι πάντα link σε Wikimedia Commons
 export type Destination = {
   id: string;
   name: string;
@@ -68,6 +70,9 @@ export const DURATION_OPTIONS: { duration: DurationBucket; range: { min: number;
   { duration: 'long', range: { min: 8, max: 99 }, emoji: '🗓️', label: '8+ μέρες' },
 ];
 
+// εδώ είναι όλοι οι προορισμοί, ένα μεγάλο array - κάθε entry είναι μια πόλη/νησί με τα στοιχεία της
+// (χώρα, ήπειρος, εικόνα, tags, εποχές, προτεινόμενες μέρες). Δεν σχολιάζω το κάθε ένα ξεχωριστά,
+// είναι όλα ίδιας μορφής, απλά δεδομένα
 export const DESTINATIONS: Destination[] = [
   {
     id: 'santorini',

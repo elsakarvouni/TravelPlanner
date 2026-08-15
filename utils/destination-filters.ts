@@ -6,6 +6,7 @@ export type DestinationFilters = {
   durations: Set<DurationBucket>;
 };
 
+// μετατρέπει τα φίλτρα σε query params για να μπουν στο URL (π.χ. όταν κάνουμε navigate)
 export function filtersToParams(filters: DestinationFilters): Record<string, string> {
   const params: Record<string, string> = {};
   if (filters.tags.size > 0) params.tags = Array.from(filters.tags).join(',');
@@ -14,6 +15,7 @@ export function filtersToParams(filters: DestinationFilters): Record<string, str
   return params;
 }
 
+// το αντίστροφο - παίρνει τα params από το URL και τα ξαναφτιάχνει σε Sets
 export function paramsToFilters(params: {
   tags?: string;
   seasons?: string;
@@ -26,10 +28,13 @@ export function paramsToFilters(params: {
   };
 }
 
+// ελέγχει αν ένας προορισμός ταιριάζει με τα επιλεγμένα φίλτρα - κενό φίλτρο σημαίνει "ταιριάζει με όλα"
 export function matchesFilters(destination: Destination, filters: DestinationFilters): boolean {
   const matchesTags = filters.tags.size === 0 || destination.tags.some((tag) => filters.tags.has(tag));
   const matchesSeasons =
     filters.seasons.size === 0 || destination.seasons.some((season) => filters.seasons.has(season));
+  // για τη διάρκεια κοιτάμε αν το εύρος προτεινόμενων ημερών του προορισμού επικαλύπτεται
+  // με το εύρος του επιλεγμένου duration bucket (π.χ. "σαββατοκύριακο" = 2-3 μέρες)
   const matchesDuration =
     filters.durations.size === 0 ||
     DURATION_OPTIONS.some(

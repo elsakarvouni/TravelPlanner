@@ -52,4 +52,47 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
     await db.execAsync('PRAGMA user_version = 4');
     currentVersion = 4;
   }
+
+  if (currentVersion < 5) {
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS itinerary_entries (
+        id INTEGER PRIMARY KEY NOT NULL,
+        trip_id INTEGER NOT NULL,
+        day INTEGER NOT NULL,
+        time TEXT NOT NULL,
+        type TEXT NOT NULL CHECK (type IN ('flight', 'accommodation', 'activity')),
+        title TEXT NOT NULL,
+        subtitle TEXT,
+        notes TEXT,
+        latitude REAL,
+        longitude REAL
+      );
+
+      CREATE TABLE IF NOT EXISTS checklist_items (
+        id INTEGER PRIMARY KEY NOT NULL,
+        trip_id INTEGER NOT NULL,
+        label TEXT NOT NULL,
+        is_checked INTEGER NOT NULL DEFAULT 0
+      );
+
+      CREATE TABLE IF NOT EXISTS budget_items (
+        id INTEGER PRIMARY KEY NOT NULL,
+        trip_id INTEGER NOT NULL,
+        category TEXT NOT NULL,
+        amount REAL NOT NULL,
+        note TEXT
+      );
+    `);
+    await db.execAsync('PRAGMA user_version = 5');
+    currentVersion = 5;
+  }
+
+  if (currentVersion < 6) {
+    await db.execAsync(`
+      ALTER TABLE trips ADD COLUMN destination_latitude REAL;
+      ALTER TABLE trips ADD COLUMN destination_longitude REAL;
+    `);
+    await db.execAsync('PRAGMA user_version = 6');
+    currentVersion = 6;
+  }
 }

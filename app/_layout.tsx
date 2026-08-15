@@ -66,6 +66,10 @@ export default function RootLayout() {
               options={{ presentation: 'modal', title: 'Προσθήκη Χώρας' }}
             />
             <Stack.Screen name="favorites" options={{ title: 'Αγαπημένα' }} />
+            <Stack.Screen
+              name="trip-checklist/[id]"
+              options={{ presentation: 'modal', title: 'Αποσκευές' }}
+            />
           </Stack>
           <StatusBar style="auto" />
         </ThemeProvider>

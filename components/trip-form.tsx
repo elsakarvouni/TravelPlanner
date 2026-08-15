@@ -25,6 +25,12 @@ export function TripForm({ initialValues, submitLabel, savingLabel, onSubmit }: 
   const [destinationCountryCode, setDestinationCountryCode] = useState<string | null>(
     initialValues?.destination_country_code ?? null
   );
+  const [destinationLatitude, setDestinationLatitude] = useState<number | null>(
+    initialValues?.destination_latitude ?? null
+  );
+  const [destinationLongitude, setDestinationLongitude] = useState<number | null>(
+    initialValues?.destination_longitude ?? null
+  );
   const [startDate, setStartDate] = useState(initialValues?.start_date ?? '');
   const [endDate, setEndDate] = useState(initialValues?.end_date ?? '');
   const [saving, setSaving] = useState(false);
@@ -41,6 +47,8 @@ export function TripForm({ initialValues, submitLabel, savingLabel, onSubmit }: 
         title: title.trim(),
         destination: destination.trim(),
         destination_country_code: destinationCountryCode,
+        destination_latitude: destinationLatitude,
+        destination_longitude: destinationLongitude,
         start_date: startDate.trim(),
         end_date: endDate.trim(),
       });
@@ -68,8 +76,14 @@ export function TripForm({ initialValues, submitLabel, savingLabel, onSubmit }: 
         onChangeText={(text) => {
           setDestination(text);
           setDestinationCountryCode(null);
+          setDestinationLatitude(null);
+          setDestinationLongitude(null);
         }}
-        onSelectPlace={(place) => setDestinationCountryCode(place.countryCode)}
+        onSelectPlace={(place) => {
+          setDestinationCountryCode(place.countryCode);
+          setDestinationLatitude(place.lat);
+          setDestinationLongitude(place.lon);
+        }}
         placeholder="π.χ. Λισαβόνα"
       />
 

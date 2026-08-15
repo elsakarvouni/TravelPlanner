@@ -84,7 +84,9 @@ export default function HomeScreen() {
           renderItem={({ item }) => {
             const coverImage = getTripCoverImage(item);
             return (
-              <View style={[styles.card, { borderColor, backgroundColor: cardBackground }]}>
+              <Pressable
+                style={[styles.card, { borderColor, backgroundColor: cardBackground }]}
+                onPress={() => router.push({ pathname: '/trip/[id]', params: { id: String(item.id) } })}>
                 <View style={styles.coverWrapper}>
                   {coverImage ? (
                     <Image source={{ uri: coverImage }} style={styles.coverImage} contentFit="cover" />
@@ -127,7 +129,7 @@ export default function HomeScreen() {
                     </ThemedText>
                   </View>
                 </View>
-              </View>
+              </Pressable>
             );
           }}
         />

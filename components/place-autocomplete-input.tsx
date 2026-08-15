@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { usePlaceSearch, type PlaceSuggestion } from '@/hooks/use-place-search';
@@ -9,10 +9,11 @@ type Props = {
   value: string;
   onChangeText: (text: string) => void;
   onSelectPlace?: (place: PlaceSuggestion) => void;
+  onFocus?: () => void;
   placeholder?: string;
 };
 
-export function PlaceAutocompleteInput({ value, onChangeText, onSelectPlace, placeholder }: Props) {
+export function PlaceAutocompleteInput({ value, onChangeText, onSelectPlace, onFocus, placeholder }: Props) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const { results, loading } = usePlaceSearch(showSuggestions ? value : '');
 
@@ -28,7 +29,7 @@ export function PlaceAutocompleteInput({ value, onChangeText, onSelectPlace, pla
   };
 
   return (
-    <View>
+    <View style={styles.wrapper}>
       <TextInput
         style={[styles.input, { color: textColor, borderColor }]}
         value={value}
@@ -36,7 +37,10 @@ export function PlaceAutocompleteInput({ value, onChangeText, onSelectPlace, pla
           onChangeText(text);
           setShowSuggestions(true);
         }}
-        onFocus={() => setShowSuggestions(true)}
+        onFocus={() => {
+          setShowSuggestions(true);
+          onFocus?.();
+        }}
         placeholder={placeholder}
         placeholderTextColor={placeholderColor}
       />
@@ -48,16 +52,13 @@ export function PlaceAutocompleteInput({ value, onChangeText, onSelectPlace, pla
               <ActivityIndicator size="small" />
             </View>
           )}
-          <FlatList
-            data={results}
-            keyExtractor={(item) => item.id}
-            keyboardShouldPersistTaps="handled"
-            renderItem={({ item }) => (
-              <Pressable style={styles.suggestionRow} onPress={() => handleSelect(item)}>
+          <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled>
+            {results.map((item) => (
+              <Pressable key={item.id} style={styles.suggestionRow} onPress={() => handleSelect(item)}>
                 <ThemedText>{item.label}</ThemedText>
               </Pressable>
-            )}
-          />
+            ))}
+          </ScrollView>
         </View>
       )}
     </View>
@@ -65,17 +66,27 @@ export function PlaceAutocompleteInput({ value, onChangeText, onSelectPlace, pla
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    position: 'relative',
+    zIndex: 20,
+  },
   input: {
     borderWidth: 1,
     borderRadius: 8,
     padding: 10,
   },
   dropdown: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
     borderWidth: 1,
     borderRadius: 8,
     marginTop: 4,
     maxHeight: 200,
     overflow: 'hidden',
+    zIndex: 20,
+    elevation: 6,
   },
   loadingRow: {
     padding: 10,

@@ -23,10 +23,14 @@ export function useTrips() {
   const addTrip = useCallback(
     async (trip: NewTrip) => {
       const result = await db.runAsync(
-        'INSERT INTO trips (title, destination, destination_country_code, start_date, end_date) VALUES (?, ?, ?, ?, ?)',
+        `INSERT INTO trips
+         (title, destination, destination_country_code, destination_latitude, destination_longitude, start_date, end_date)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
         trip.title,
         trip.destination,
         trip.destination_country_code,
+        trip.destination_latitude,
+        trip.destination_longitude,
         trip.start_date,
         trip.end_date
       );
@@ -52,11 +56,14 @@ export function useTrips() {
     async (id: number, trip: NewTrip) => {
       await db.runAsync(
         `UPDATE trips
-         SET title = ?, destination = ?, destination_country_code = ?, start_date = ?, end_date = ?, auto_added_been = 0
+         SET title = ?, destination = ?, destination_country_code = ?, destination_latitude = ?,
+             destination_longitude = ?, start_date = ?, end_date = ?, auto_added_been = 0
          WHERE id = ?`,
         trip.title,
         trip.destination,
         trip.destination_country_code,
+        trip.destination_latitude,
+        trip.destination_longitude,
         trip.start_date,
         trip.end_date,
         id

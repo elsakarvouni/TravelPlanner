@@ -19,6 +19,8 @@ export default function AddTripScreen() {
               title: '',
               destination,
               destination_country_code: countryCode || null,
+              destination_latitude: null,
+              destination_longitude: null,
               start_date: '',
               end_date: '',
             }

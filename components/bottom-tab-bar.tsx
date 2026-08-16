@@ -33,7 +33,7 @@ export function BottomTabBar({ state, navigation }: BottomTabBarProps) {
   // η μπάρα ήδη έχει δικό της padding (βλ. styles.container/slot) - αν προσθέταμε ολόκληρο το insets.bottom
   // από πάνω, τα εικονίδια έμεναν κολλημένα ψηλά με μεγάλο κενό από κάτω. Αφαιρούμε ένα κομμάτι που ήδη
   // καλύπτει η υπάρχουσα padding, με ελάχιστο 8 ώστε να μένει λογικό κενό και σε συσκευές χωρίς safe area
-  const bottomPadding = Math.max(insets.bottom - 10, 8);
+  const bottomPadding = Math.max(insets.bottom - 20, 6);
 
   return (
     <View

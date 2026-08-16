@@ -1,24 +1,20 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useSQLiteContext } from 'expo-sqlite';
 
+import * as storage from '@/database/storage';
 import type { ItineraryEntry, NewItineraryEntry } from '@/types/itinerary';
 
 // hook για το πρόγραμμα (itinerary) του ταξιδιού - πτήσεις, διαμονή, δραστηριότητες ανά μέρα
 export function useItinerary(tripId: number) {
-  const db = useSQLiteContext();
   const [entries, setEntries] = useState<ItineraryEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   // ταξινομημένα πρώτα ανά μέρα και μετά ανά ώρα, έτσι βγαίνουν σωστά στη σειρά στη λίστα
   const refresh = useCallback(async () => {
     setLoading(true);
-    const rows = await db.getAllAsync<ItineraryEntry>(
-      'SELECT * FROM itinerary_entries WHERE trip_id = ? ORDER BY day ASC, time ASC',
-      tripId
-    );
+    const rows = await storage.getItineraryEntries(tripId);
     setEntries(rows);
     setLoading(false);
-  }, [db, tripId]);
+  }, [tripId]);
 
   useEffect(() => {
     refresh();
@@ -26,53 +22,27 @@ export function useItinerary(tripId: number) {
 
   const addEntry = useCallback(
     async (entry: NewItineraryEntry) => {
-      await db.runAsync(
-        `INSERT INTO itinerary_entries
-         (trip_id, day, time, type, title, subtitle, notes, latitude, longitude)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        tripId,
-        entry.day,
-        entry.time,
-        entry.type,
-        entry.title,
-        entry.subtitle,
-        entry.notes,
-        entry.latitude,
-        entry.longitude
-      );
+      await storage.addItineraryEntry(tripId, entry);
       await refresh();
     },
-    [db, tripId, refresh]
+    [tripId, refresh]
   );
 
   // ενημέρωση υπάρχουσας εγγραφής (π.χ. άλλαξε ώρα ή σημειώσεις)
   const updateEntry = useCallback(
     async (id: number, entry: NewItineraryEntry) => {
-      await db.runAsync(
-        `UPDATE itinerary_entries
-         SET day = ?, time = ?, type = ?, title = ?, subtitle = ?, notes = ?, latitude = ?, longitude = ?
-         WHERE id = ?`,
-        entry.day,
-        entry.time,
-        entry.type,
-        entry.title,
-        entry.subtitle,
-        entry.notes,
-        entry.latitude,
-        entry.longitude,
-        id
-      );
+      await storage.updateItineraryEntry(id, entry);
       await refresh();
     },
-    [db, refresh]
+    [refresh]
   );
 
   const deleteEntry = useCallback(
     async (id: number) => {
-      await db.runAsync('DELETE FROM itinerary_entries WHERE id = ?', id);
+      await storage.deleteItineraryEntry(id);
       await refresh();
     },
-    [db, refresh]
+    [refresh]
   );
 
   return { entries, loading, refresh, addEntry, updateEntry, deleteEntry };

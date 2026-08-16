@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
-import { Alert, Pressable, SectionList, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, SectionList, StyleSheet, TextInput, View } from 'react-native';
 
 import { UN_COUNTRIES, type CountryInfo } from '@/assets/data/countries';
+import { showAlert } from '@/components/app-alert';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { STATUS_COLORS } from '@/constants/travel-status';
@@ -31,7 +32,7 @@ export default function AddCountryScreen() {
 
   // ρωτάει αν θες τη χώρα στο been ή στο wish
   const handleSelect = (country: CountryInfo) => {
-    Alert.alert(`${country.flag} ${country.name}`, 'Πρόσθεσέ το στη λίστα', [
+    showAlert(`${country.flag} ${country.name}`, 'Πρόσθεσέ το στη λίστα', [
       { text: 'Been', onPress: () => addStatus(country.code, 'been') },
       { text: 'Wish', onPress: () => addStatus(country.code, 'wish') },
       { text: 'Άκυρο', style: 'cancel' },

@@ -28,6 +28,7 @@ const MAPPING = {
   'checklist': 'checklist',
   'circle': 'radio-button-unchecked',
   'checkmark.circle.fill': 'check-circle',
+  'gearshape': 'settings',
 } as IconMapping;
 
 /**

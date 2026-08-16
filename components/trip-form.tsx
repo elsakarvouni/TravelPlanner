@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Alert, Button, StyleSheet, TextInput } from 'react-native';
+import { Button, StyleSheet, TextInput } from 'react-native';
 
+import { showAlert } from '@/components/app-alert';
 import { DateRangeField } from '@/components/date-range-field';
 import { PlaceAutocompleteInput } from '@/components/place-autocomplete-input';
 import { ThemedText } from '@/components/themed-text';
@@ -39,7 +40,7 @@ export function TripForm({ initialValues, submitLabel, savingLabel, onSubmit }: 
   // validation βασικό (μη κενά πεδία) και μετά καλεί το onSubmit που δίνεται απ' έξω (create ή update ανάλογα την οθόνη)
   const handleSave = async () => {
     if (!title.trim() || !destination.trim() || !startDate.trim() || !endDate.trim()) {
-      Alert.alert('Λείπουν στοιχεία', 'Συμπλήρωσε όλα τα πεδία.');
+      showAlert('Λείπουν στοιχεία', 'Συμπλήρωσε όλα τα πεδία.');
       return;
     }
 

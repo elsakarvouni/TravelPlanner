@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
 import {
-  Alert,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Pressable,
@@ -10,9 +9,9 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useSQLiteContext } from 'expo-sqlite';
 
 import { UN_COUNTRIES, type CountryInfo } from '@/assets/data/countries';
+import { showAlert } from '@/components/app-alert';
 import { FullMapModal } from '@/components/full-map-modal';
 import { StatDonut } from '@/components/stat-donut';
 import { ThemedText } from '@/components/themed-text';
@@ -41,7 +40,6 @@ function toCountryList(codes: Set<string>): CountryInfo[] {
 // από εδώ προσθέτω χώρα, τη μετακινώ been<->wish, τη σβήνω, ή βλέπω τον χάρτη σε fullscreen
 export default function DiscoverScreen() {
   const router = useRouter();
-  const db = useSQLiteContext();
   const { width } = useWindowDimensions();
   const { been, wish, refresh, addStatus, removeStatus } = useCountryStatus();
   const [page, setPage] = useState(0);
@@ -56,10 +54,10 @@ export default function DiscoverScreen() {
   useFocusEffect(
     useCallback(() => {
       (async () => {
-        await applyCompletedTripsToBeen(db);
+        await applyCompletedTripsToBeen();
         await refresh();
       })();
-    }, [db, refresh])
+    }, [refresh])
   );
 
   const beenSections = useMemo(() => groupCountriesByRegion(toCountryList(been)), [been]);
@@ -75,7 +73,7 @@ export default function DiscoverScreen() {
   // ανοίγει το menu για μια χώρα - μπορείς να την πας στην άλλη λίστα (been<->wish) ή να τη σβήσεις εντελώς
   const openCountryMenu = (country: CountryInfo, status: CountryStatusKind) => {
     const otherStatus: CountryStatusKind = status === 'been' ? 'wish' : 'been';
-    Alert.alert(`${country.flag} ${country.name}`, undefined, [
+    showAlert(`${country.flag} ${country.name}`, undefined, [
       {
         text: status === 'been' ? 'Μετακίνηση στα Wish' : 'Μετακίνηση στα Been',
         onPress: async () => {

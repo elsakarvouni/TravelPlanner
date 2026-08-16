@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ScreenOrientation from 'expo-screen-orientation';
@@ -23,9 +23,11 @@ export function FullMapModal({ visible, onClose, highlightedCodes, highlightColo
   const textColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor({}, 'icon');
 
-  // όσο είναι ανοιχτό το modal κλειδώνουμε σε landscape (πιο βολικό για χάρτη), και το ξανακλειδώνουμε portrait όταν κλείνει
+  // όσο είναι ανοιχτό το modal κλειδώνουμε σε landscape (πιο βολικό για χάρτη), και το ξανακλειδώνουμε
+  // portrait όταν κλείνει - δεν υποστηρίζεται στο web (screen.orientation.lock() πετάει NotSupportedError
+  // σε browsers/desktop), οπότε το προσπερνάμε εκεί
   useEffect(() => {
-    if (!visible) return;
+    if (!visible || Platform.OS === 'web') return;
 
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
     return () => {

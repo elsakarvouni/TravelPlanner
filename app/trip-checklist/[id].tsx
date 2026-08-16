@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Alert, Keyboard, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import type { AlertButton } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { showAlert } from '@/components/app-alert';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -61,7 +63,7 @@ export default function TripChecklistScreen() {
   // menu όταν κάνεις long press σε ένα αντικείμενο. η μετονομασία δείχνεται μόνο σε iOS
   // γιατί το Alert.prompt δεν δουλεύει στο Android
   const handleLongPress = (item: ChecklistItem) => {
-    const options: Parameters<typeof Alert.alert>[2] = [];
+    const options: AlertButton[] = [];
 
     if (Platform.OS === 'ios') {
       options.push({
@@ -85,7 +87,7 @@ export default function TripChecklistScreen() {
       { text: 'Άκυρο', style: 'cancel' }
     );
 
-    Alert.alert(item.label, undefined, options);
+    showAlert(item.label, undefined, options);
   };
 
   return (

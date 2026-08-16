@@ -1,9 +1,10 @@
 import { useCallback, useMemo } from 'react';
-import { Alert, FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import * as WebBrowser from 'expo-web-browser';
 
+import { showAlert } from '@/components/app-alert';
 import { DestinationFilterButton } from '@/components/destination-filter-button';
 import { DestinationFiltersSheet } from '@/components/destination-filters-sheet';
 import { ThemedText } from '@/components/themed-text';
@@ -62,7 +63,7 @@ export default function SearchScreen() {
 
   // ρωτάει αν θες Booking ή Airbnb για καταλύματα
   const handleAccommodationsPress = () => {
-    Alert.alert('Καταλύματα', 'Πού θέλεις να ψάξεις;', [
+    showAlert('Καταλύματα', 'Πού θέλεις να ψάξεις;', [
       { text: 'Booking.com', onPress: () => WebBrowser.openBrowserAsync('https://www.booking.com/') },
       { text: 'Airbnb', onPress: () => WebBrowser.openBrowserAsync('https://www.airbnb.com/') },
       { text: 'Άκυρο', style: 'cancel' },

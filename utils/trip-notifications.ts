@@ -1,6 +1,8 @@
 import { subDays, setHours, setMinutes, setSeconds, setMilliseconds, parseISO } from 'date-fns';
 import * as Notifications from 'expo-notifications';
-import type { SQLiteDatabase } from 'expo-sqlite';
+import { Platform } from 'react-native';
+
+import * as storage from '@/database/storage';
 
 // ό,τι χρειαζόμαστε από ένα ταξίδι για να στήσουμε ειδοποιήσεις, δεν χρειαζόμαστε όλο το Trip object
 type NotifiableTrip = {
@@ -34,6 +36,9 @@ async function cancelIfExists(identifier: string) {
 
 // ακυρώνει και τις δύο ειδοποιήσεις (3 μέρες πριν, 1 μέρα πριν) ενός ταξιδιού
 export async function cancelTripNotifications(tripId: number) {
+  // τοπικές scheduled ειδοποιήσεις δεν υποστηρίζονται στο web - δεν έχει νόημα να προσπαθήσουμε
+  if (Platform.OS === 'web') return;
+
   const { threeDayId, oneDayId } = getTripNotificationIds(tripId);
   await cancelIfExists(threeDayId);
   await cancelIfExists(oneDayId);
@@ -42,6 +47,8 @@ export async function cancelTripNotifications(tripId: number) {
 // στήνει τις δύο ειδοποιήσεις για ένα ταξίδι (3 μέρες πριν στις 10:00, 1 μέρα πριν στις 18:00)
 // πρώτα ακυρώνει τις παλιές ώστε να μην μαζεύονται διπλές αν καλεστεί ξανά (π.χ. μετά από edit)
 export async function scheduleTripNotifications(trip: NotifiableTrip) {
+  if (Platform.OS === 'web') return;
+
   const { threeDayId, oneDayId } = getTripNotificationIds(trip.id);
   await cancelTripNotifications(trip.id);
 
@@ -79,10 +86,10 @@ export async function scheduleTripNotifications(trip: NotifiableTrip) {
 }
 
 // τρέχει π.χ. στο app startup - ξαναστήνει τις ειδοποιήσεις για όλα τα ταξίδια που δεν έχουν περάσει ακόμα
-export async function scheduleAllUpcomingTripNotifications(db: SQLiteDatabase) {
-  const trips = await db.getAllAsync<NotifiableTrip>(
-    "SELECT id, title, destination, start_date FROM trips WHERE date(start_date) >= date('now')"
-  );
+export async function scheduleAllUpcomingTripNotifications() {
+  if (Platform.OS === 'web') return;
+
+  const trips = await storage.getUpcomingTrips();
   for (const trip of trips) {
     await scheduleTripNotifications(trip);
   }

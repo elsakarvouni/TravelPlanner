@@ -196,24 +196,47 @@ export function AddItineraryEntrySheet({ visible, onClose, days, defaultDay, edi
                 </ScrollView>
 
                 <ThemedText style={styles.label}>Ώρα</ThemedText>
-                <Pressable style={[styles.input, { borderColor }]} onPress={openTimePicker}>
-                  <ThemedText style={!time ? { color: placeholderColor } : undefined}>
-                    {time || 'Επίλεξε ώρα'}
-                  </ThemedText>
-                </Pressable>
-                {Platform.OS === 'ios' && showTimePicker && (
-                  <View>
-                    <DateTimePicker
-                      value={timeStringToDate(time)}
-                      mode="time"
-                      display="spinner"
-                      is24Hour
-                      onChange={handleTimeChange}
-                    />
-                    <Pressable onPress={() => setShowTimePicker(false)} style={styles.timeDoneButton}>
-                      <ThemedText style={{ color: ACCENT, fontWeight: '700' }}>Έτοιμο</ThemedText>
+                {Platform.OS === 'web' ? (
+                  // το @react-native-community/datetimepicker δεν έχει web υλοποίηση - στο web
+                  // χρησιμοποιούμε απευθείας το native browser time input (ίδιο "HH:mm" format
+                  // με αυτό που ήδη κρατάμε, δεν χρειάζεται καμία μετατροπή)
+                  <input
+                    type="time"
+                    value={time}
+                    onChange={(event) => setTime(event.target.value)}
+                    style={{
+                      borderWidth: 1,
+                      borderStyle: 'solid',
+                      borderColor,
+                      borderRadius: 8,
+                      padding: 10,
+                      fontSize: 15,
+                      color: textColor,
+                      backgroundColor: 'transparent',
+                    }}
+                  />
+                ) : (
+                  <>
+                    <Pressable style={[styles.input, { borderColor }]} onPress={openTimePicker}>
+                      <ThemedText style={!time ? { color: placeholderColor } : undefined}>
+                        {time || 'Επίλεξε ώρα'}
+                      </ThemedText>
                     </Pressable>
-                  </View>
+                    {Platform.OS === 'ios' && showTimePicker && (
+                      <View>
+                        <DateTimePicker
+                          value={timeStringToDate(time)}
+                          mode="time"
+                          display="spinner"
+                          is24Hour
+                          onChange={handleTimeChange}
+                        />
+                        <Pressable onPress={() => setShowTimePicker(false)} style={styles.timeDoneButton}>
+                          <ThemedText style={{ color: ACCENT, fontWeight: '700' }}>Έτοιμο</ThemedText>
+                        </Pressable>
+                      </View>
+                    )}
+                  </>
                 )}
 
                 <ThemedText style={styles.label}>Τίτλος</ThemedText>

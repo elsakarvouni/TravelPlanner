@@ -1,0 +1,23 @@
+{
+  "name": "TravelPlanner",
+  "short_name": "TravelPlanner",
+  "description": "Σχεδίασε το ταξίδι σου - πρόγραμμα, χάρτης, έξοδα, λίστα αποσκευών, καιρός, τοπικές πληροφορίες.",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0a7ea4",
+  "background_color": "#000000"
+}

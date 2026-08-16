@@ -1,20 +1,18 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useSQLiteContext } from 'expo-sqlite';
+
+import * as storage from '@/database/storage';
 
 // hook για τους αγαπημένους προορισμούς - απλά ένα set με τα ids τους
 export function useFavorites() {
-  const db = useSQLiteContext();
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
     setLoading(true);
-    const rows = await db.getAllAsync<{ destination_id: string }>(
-      'SELECT destination_id FROM destination_favorites'
-    );
-    setFavoriteIds(new Set(rows.map((row) => row.destination_id)));
+    const ids = await storage.getFavoriteIds();
+    setFavoriteIds(new Set(ids));
     setLoading(false);
-  }, [db]);
+  }, []);
 
   useEffect(() => {
     refresh();
@@ -24,16 +22,13 @@ export function useFavorites() {
   const toggleFavorite = useCallback(
     async (destinationId: string) => {
       if (favoriteIds.has(destinationId)) {
-        await db.runAsync('DELETE FROM destination_favorites WHERE destination_id = ?', destinationId);
+        await storage.removeFavorite(destinationId);
       } else {
-        await db.runAsync(
-          'INSERT OR IGNORE INTO destination_favorites (destination_id) VALUES (?)',
-          destinationId
-        );
+        await storage.addFavorite(destinationId);
       }
       await refresh();
     },
-    [db, favoriteIds, refresh]
+    [favoriteIds, refresh]
   );
 
   return { favoriteIds, loading, refresh, toggleFavorite };

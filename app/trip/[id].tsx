@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 
 import { AddExpenseSheet } from '@/components/add-expense-sheet';
 import { AddItineraryEntrySheet } from '@/components/add-itinerary-entry-sheet';
+import { showAlert } from '@/components/app-alert';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -85,7 +86,7 @@ export default function TripDetailScreen() {
 
   // menu για να επεξεργαστείς ή να σβήσεις μια καταχώρηση
   const openEntryMenu = (entry: ItineraryEntry) => {
-    Alert.alert(entry.title, undefined, [
+    showAlert(entry.title, undefined, [
       {
         text: 'Επεξεργασία',
         onPress: () => {
@@ -124,7 +125,7 @@ export default function TripDetailScreen() {
 
   // menu για ένα έξοδο - επεξεργασία ή διαγραφή, ο τίτλος δείχνει κατηγορία και ποσό
   const openExpenseMenu = (expense: BudgetItem) => {
-    Alert.alert(getExpenseCategory(expense.category).label, formatMoney(expense.amount), [
+    showAlert(getExpenseCategory(expense.category).label, formatMoney(expense.amount), [
       {
         text: 'Επεξεργασία',
         onPress: () => {

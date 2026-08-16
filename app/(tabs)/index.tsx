@@ -1,8 +1,9 @@
 import { useCallback } from 'react';
-import { Alert, FlatList, Linking, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, Linking, Pressable, StyleSheet, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 
+import { showAlert } from '@/components/app-alert';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -53,13 +54,13 @@ export default function HomeScreen() {
     }
 
     Linking.openURL('https://gemini.google.com/app').catch(() => {
-      Alert.alert('Δεν ήταν δυνατό το άνοιγμα', 'Δοκίμασε ξανά αργότερα.');
+      showAlert('Δεν ήταν δυνατό το άνοιγμα', 'Δοκίμασε ξανά αργότερα.');
     });
   };
 
   // menu με επιλογές για ένα ταξίδι - επεξεργασία ή διαγραφή
   const openTripMenu = (trip: Trip) => {
-    Alert.alert(trip.title, undefined, [
+    showAlert(trip.title, undefined, [
       {
         text: 'Επεξεργασία ταξιδιού',
         onPress: () => router.push({ pathname: '/edit-trip/[id]', params: { id: String(trip.id) } }),
@@ -85,14 +86,20 @@ export default function HomeScreen() {
           )}
         </View>
         <View style={styles.headerButtons}>
+          <Pressable
+            style={[styles.aiChatButton, { borderColor }]}
+            onPress={() => router.push('/settings')}
+            hitSlop={8}>
+            <IconSymbol name="gearshape" size={20} color={iconColor} />
+          </Pressable>
           <Pressable style={[styles.aiChatButton, { borderColor }]} onPress={handleAiChatPress} hitSlop={8}>
             <ThemedText style={styles.aiChatIcon}>✨</ThemedText>
           </Pressable>
           <Pressable
-            style={[styles.newTripButton, { backgroundColor: ACCENT_COLOR }]}
-            onPress={() => router.push('/add-trip')}>
-            <IconSymbol name="plus" size={16} color="#fff" />
-            <ThemedText style={styles.newTripButtonLabel}>Νέο ταξίδι</ThemedText>
+            style={[styles.aiChatButton, { backgroundColor: ACCENT_COLOR, borderColor: ACCENT_COLOR }]}
+            onPress={() => router.push('/add-trip')}
+            hitSlop={8}>
+            <IconSymbol name="plus" size={20} color="#fff" />
           </Pressable>
         </View>
       </View>
@@ -206,14 +213,6 @@ const styles = StyleSheet.create({
   },
   aiChatIcon: {
     fontSize: 18,
-  },
-  newTripButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 20,
   },
   newTripButtonLabel: {
     color: '#fff',

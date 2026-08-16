@@ -1,24 +1,20 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useSQLiteContext } from 'expo-sqlite';
 
+import * as storage from '@/database/storage';
 import type { BudgetItem, NewBudgetItem } from '@/types/budget';
 
 // hook για το budget ενός ταξιδιού - φέρνει τα έξοδα, προσθέτει/αλλάζει/σβήνει, και υπολογίζει το σύνολο
 export function useBudget(tripId: number) {
-  const db = useSQLiteContext();
   const [items, setItems] = useState<BudgetItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   // ξαναφορτώνει τα budget items από τη βάση, τα πιο καινούρια πρώτα
   const refresh = useCallback(async () => {
     setLoading(true);
-    const rows = await db.getAllAsync<BudgetItem>(
-      'SELECT * FROM budget_items WHERE trip_id = ? ORDER BY id DESC',
-      tripId
-    );
+    const rows = await storage.getBudgetItems(tripId);
     setItems(rows);
     setLoading(false);
-  }, [db, tripId]);
+  }, [tripId]);
 
   // φόρτωση με το που ανοίγει το hook
   useEffect(() => {
@@ -27,39 +23,27 @@ export function useBudget(tripId: number) {
 
   const addItem = useCallback(
     async (item: NewBudgetItem) => {
-      await db.runAsync(
-        'INSERT INTO budget_items (trip_id, category, amount, note) VALUES (?, ?, ?, ?)',
-        tripId,
-        item.category,
-        item.amount,
-        item.note
-      );
+      await storage.addBudgetItem(tripId, item);
       await refresh();
     },
-    [db, tripId, refresh]
+    [tripId, refresh]
   );
 
   // ενημέρωση υπάρχοντος εξόδου
   const updateItem = useCallback(
     async (id: number, item: NewBudgetItem) => {
-      await db.runAsync(
-        'UPDATE budget_items SET category = ?, amount = ?, note = ? WHERE id = ?',
-        item.category,
-        item.amount,
-        item.note,
-        id
-      );
+      await storage.updateBudgetItem(id, item);
       await refresh();
     },
-    [db, refresh]
+    [refresh]
   );
 
   const deleteItem = useCallback(
     async (id: number) => {
-      await db.runAsync('DELETE FROM budget_items WHERE id = ?', id);
+      await storage.deleteBudgetItem(id);
       await refresh();
     },
-    [db, refresh]
+    [refresh]
   );
 
   // απλά αθροίζουμε όλα τα ποσά για να βγει το σύνολο του budget

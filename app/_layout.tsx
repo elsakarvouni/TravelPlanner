@@ -9,6 +9,7 @@ import { Platform } from 'react-native';
 import 'react-native-reanimated';
 
 import { AppAlertHost } from '@/components/app-alert';
+import { ModalCloseButton } from '@/components/modal-close-button';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { registerServiceWorker } from '@/utils/register-service-worker';
 import { scheduleAllUpcomingTripNotifications } from '@/utils/trip-notifications';
@@ -83,21 +84,25 @@ export default function RootLayout() {
           <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
           <Stack.Screen
             name="add-trip"
-            options={{ presentation: 'modal', title: 'Νέο Ταξίδι' }}
+            options={{ presentation: 'modal', title: 'Νέο Ταξίδι', headerLeft: () => <ModalCloseButton /> }}
           />
           <Stack.Screen
             name="edit-trip/[id]"
-            options={{ presentation: 'modal', title: 'Επεξεργασία Ταξιδιού' }}
+            options={{
+              presentation: 'modal',
+              title: 'Επεξεργασία Ταξιδιού',
+              headerLeft: () => <ModalCloseButton />,
+            }}
           />
           <Stack.Screen
             name="add-country"
-            options={{ presentation: 'modal', title: 'Προσθήκη Χώρας' }}
+            options={{ presentation: 'modal', title: 'Προσθήκη Χώρας', headerLeft: () => <ModalCloseButton /> }}
           />
           <Stack.Screen name="favorites" options={{ title: 'Αγαπημένα' }} />
           <Stack.Screen name="settings" options={{ title: 'Ρυθμίσεις' }} />
           <Stack.Screen
             name="trip-checklist/[id]"
-            options={{ presentation: 'modal', title: 'Αποσκευές' }}
+            options={{ presentation: 'modal', title: 'Αποσκευές', headerLeft: () => <ModalCloseButton /> }}
           />
         </Stack>
         <StatusBar style="auto" />
